@@ -1,0 +1,202 @@
+CUTE - Correlation Utilities and Two-point Estimates
+
+
+1 Introduction.
+
+This file describes the general functionality of CUTE_box (the version
+of CUTE for periodic-box catalogs).
+
+CUTE_box provides a set of tools to calculate 2-point correlation functions
+of cosmological point distributions. For the periodic-box case a
+homogeneous and isotropic distribution is assumed, and therefore only the
+monopole correlation function is supported (i.e.: particles are correlated
+according to their three-dimensional relative distance r).
+
+The CUDA implementation for the periodic-box mode is not supported in the
+public version, although it probably will be in the future.
+
+
+2 Dependencies.
+
+CUTE_box is self-contained and only needs the gcc C compiler to run.
+Although CUTE_box is parallelized for shared memory machines with
+OpenMP, systems lacking this will be able to run in sequential mode
+anyway.
+
+Once the input files are provided and the compile-time options set,
+compilation should be straightforward by just typing
+
+  $ make CUTE_box
+
+This will generate the executable CUTE_box which can then be run by typing
+
+  $ ./CUTE_box <param_file>
+
+Where <param_file> is the path to the parameter file (see section 3.1).
+
+
+3 Input files.
+
+Several files are needed in any CUTE run:
+3.1 The parameter file:
+   Part of the behavior of CUTE is governed through the parameter file. This
+   file must contain the following fields:
+    * data_filename= FILENAME
+              See section 3.2 below.
+    * num_lines= INT
+              This parameter determines the number of lines to be read from
+              the data and random catalogs. If absent or set to 'all', all
+ 	      the lines in the files will be read.
+    * input_format= INT
+              This select the format of the input data. If set to 0 the
+              default format described in section 3.2 is expected. If set
+              to 1 or 2 Gadget formats 1 or 2 are expected (respectively).
+	      If the data is distributed among multiple snapshot files,
+	      CUTE_box will detect them, and read all of them. If this is
+	      the case, the variable data_filename should only containt
+	      the file prefix (i.e: without the .x suffixes).
+    * output_filename= FILE
+              See section 5 below.
+    * box_size= FLOAT
+      	      The box size (in the same units as the particle positions). If
+              input_format is 1 or 2, the box size is read from the Gadget
+	      file header and this value is overriden.
+    * use_pm= INT
+              If set to 1 the 2PCF will be calculated using a particle-mesh
+              algorithm (see section 6). Setting it to 0 will disable this
+              option and the 2PCF will be calculated by brute-force or using
+	      a tree algorithm.
+    * n_grid_side= INT
+              If use_pm==1 the box will be divided into n_grid_side^3 cells.
+    * use_tree= INT
+              If set to 1 a tree algorithm (see section 6) will be used.
+    * max_tree_order= INT
+              The smallest tree branches (leaves) will be created by dividing
+ 	      the main box max_tree_order times.
+    * max_tree_nparts= INT
+              Initial leaves will be combined so that no group of 8 has less
+	      than max_tree_nparts particles.
+    
+    Any blank line or any line starting with the character '#' in the
+    parameter file will be ignored. An example of this file is provided with
+    the test suite (test/params.txt).
+
+3.2 The data catalog:
+    Unless input formats 1 or 2 are selected, CUTE_box assumes catalogs are
+    ASCII files with 3 columns:
+                 x         y         z
+    with the cartesian coordinates of each particle. Notice that the parameter
+    box_size in the param file must be in the same units as these positions.
+    Also, it is assumed that 0 < {x,y,z} < box_size, and the values exceeding
+    these bounds will be "wrapped" around them. This file may contain
+    other columns, which will be ignored, but the first 3 must be the ones
+    above.
+
+
+4 The compile-time options:
+
+For performance reasons some run parameters must be chosen through
+compile-time options defined at the beginning of the Makefile. The only ones
+relevant for CUTE_box are:
+
+   >For the monopole correlation function:
+   * R_MAX=<> -> maximum radius to which the monopole correlation function
+                 is calculated (in current length units).
+   * NB_R=<>  -> #bins for the monopole correlation function.
+
+   >Logarithmic binning can be selected through the flag -D_LOGBIN (see
+    below). If set, the number of bins per decade can be set through
+    the variable:
+   * N_LOGINT=<> -> # bins in r per decade.
+ 
+   >Behavior options: add any of these to the variable DEFINEOPTIONS.
+   * -D_VERBOSE  -> extra info will be output.
+   * -D_DEBUG    -> creates some debugging files.
+   * -D_LOGBIN   -> logarithmic binning will be used. Note that
+                    performance will be poorer when using
+		    logarithmic binning. Logarithmic binning is turned
+		    off if using the PM algorithm.
+
+
+5 The output file.
+
+The output file contains 6 columns:
+              r   xi(r)   error(r)   DD(r)
+In the case of brute-force algorithms, DD is the pair count histogram and
+the third column is the Poisson error calculated from DD. For the PM
+algorithm, DD contains the number of grid points at a distance r and
+error(r)==0.
+
+
+6 The correlation function.
+
+CUTE_box calculates the correlation-function using two types of
+algorithms:
+
+ * Particle-based algorithms.
+   Brute-force and tree algorithms both belong to this class. The basic
+   algorithm is as follows:
+     - Take a pair of objects in the data. The way to find the nearest
+       neighbors at this stage is what distinguishes brute-force and 
+       tree methods.
+     - Calculate the distance between both objects.
+     - Bin the pair in a histogram according to the calculated distance.
+     - Repeat for all pairs in the catalog to obtain the histogram DD.
+     - The correlation function is estimated as:
+           xi=(V/v(r))*(DD(r)/N^2)
+       where v(r)=4*pi*((r+dr/2)^3-(r-dr/2)^3)/3, V=box_size^3 and N is the
+       total # particles.
+   Note that, since in this case we have simple periodic boundary conditions,
+   no random catalogs are needed.
+   For the default algorithm, the box is divided into smaller sub-boxes,
+   which are used to find the nearest neighbors for each particle. If the
+   tree algorithm is selected, the method described in Moore et al. 
+   astro-ph/0012333 is used. The latter algorithm may perform better in
+   certain cases.
+
+ * Particle-mesh algorithms.
+   When using the pm algorithm the process is as follows:
+     - The particle content is interpolated to a grid and the overdensity
+       field delta is estimated at every grid point using a TSC algorithm.
+     - Pairs of grid points are correlated, and a weight delta_1*delta_2 is
+       given to each of them.
+     - The correlation function is estimated as:
+           xi(r)=< delta_i*delta_j >,
+       where the average is taken over all pairs of grid points separated by a
+       distance r.
+   Because a cubic grid is very simple, multiple tricks can be used that
+   accelerate the calculation of the 2PCF: the relative distances between grid
+   points are calculated only once, nearest neighbors are found easily,
+   etc. As a result of this, this method is usually the fastest, however it
+   will only yield reliable results down to the scale of the grid.
+
+
+7 Test suite
+
+The current release (>0.2) comes with a folder called "test" containing
+a set of files. These are:
+ - data.dat    : a test catalog extracted from the halo catalog of an N-body
+                 simulation, containing ~200K objects in a box of 500 Mpc/h
+ - params.txt  : an instance of the parameter file needed to run
+                 CUTE_box on the catalog above.
+This test suite is meant to clarify the expected format of the different
+input and output files and also as a check that CUTE_box is running smoothly.
+The parameter file is set up so that CUTE_box can be run on the test catalog
+from the root file by just typing:
+
+  $ ./CUTE_box test/param_box.txt
+
+
+8 License.
+
+CUTE_box is distributed under the GPL license (see COPYING in
+the root directory). We kindly ask you to cite the program's website 
+http://members.ift.uam-csic.es/dmonge/CUTE.html and accompanying
+preprint arXiv:1210.1833 when using it for published results.
+
+
+9 Contact.
+
+Regarding bugs, suggestions, questions or petitions, feel free to contact
+the author:
+    David Alonso: david dot alonso at uam dot es 
