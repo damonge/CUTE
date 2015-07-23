@@ -472,6 +472,11 @@ int main(int argc,char **argv)
     fprintf(stderr," in the CUDA implementation \n");
     exit(1);
   }
+  else if(corr_type==6) {
+    fprintf(stderr,"CUTE: Angular cross-correlations supported");
+    fprintf(stderr," in the CUDA implementation \n");
+    exit(1);
+  }
   else {
     fprintf(stderr,"CUTE: wrong correlation type.\n");
     exit(0);

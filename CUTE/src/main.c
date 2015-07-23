@@ -92,8 +92,14 @@ void run_angular_cross_corr_bf(void)
   printf(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
   printf(" - # angular bins : %d\n",nb_theta);
-  printf(" - Angular resolution: D(theta) = %.3lf \n",
-	 1./(i_dz_max*nb_dz*DTORAD));
+  if(logbin) {
+    printf(" - Logarithmic binning with %d bins per decade\n",
+	   n_logint);
+  }
+  else {
+  printf(" - Resolution: D(theta) = %.3lf \n",
+	 1./(i_theta_max*nb_theta*DTORAD));
+  }
 
   printf(" - Using a brute-force approach \n");
   printf("\n");
@@ -169,8 +175,14 @@ void run_angular_cross_corr_pm(void)
   printf(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
   printf(" - # angular bins : %d\n",nb_theta);
-  printf(" - Angular resolution: D(theta) = %.3lf \n",
-	 1./(i_dz_max*nb_dz*DTORAD));
+  if(logbin) {
+    printf(" - Logarithmic binning with %d bins per decade\n",
+	   n_logint);
+  }
+  else {
+  printf(" - Resolution: D(theta) = %.3lf \n",
+	 1./(i_theta_max*nb_theta*DTORAD));
+  }
 
   printf(" - Using a PM approach \n");
   printf("\n");
@@ -242,8 +254,14 @@ void run_full_corr_bf(void)
   printf(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
   printf(" - # angular bins : %d\n",nb_theta);
-  printf(" - Angular resolution: D(theta) = %.3lf \n",
-	 1./(i_dz_max*nb_dz*DTORAD));
+  if(logbin) {
+    printf(" - Logarithmic binning with %d bins per decade\n",
+	   n_logint);
+  }
+  else {
+  printf(" - Resolution: D(theta) = %.3lf \n",
+	 1./(i_theta_max*nb_theta*DTORAD));
+  }
 
   printf(" - Radial range: %.3lf < Dz < %.3lf \n",
 	 0.,1/i_dz_max);
@@ -323,8 +341,14 @@ void run_full_corr_pm(void)
   printf(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
   printf(" - # angular bins : %d\n",nb_theta);
-  printf(" - Angular resolution: D(theta) = %.3lf \n",
-	 1./(i_dz_max*nb_dz*DTORAD));
+  if(logbin) {
+    printf(" - Logarithmic binning with %d bins per decade\n",
+	   n_logint);
+  }
+  else {
+  printf(" - Resolution: D(theta) = %.3lf \n",
+	 1./(i_theta_max*nb_theta*DTORAD));
+  }
 
   printf(" - Radial range: %.3lf < Dz < %.3lf \n",
 	 0.,1/i_dz_max);

@@ -300,9 +300,13 @@ void write_CF(char *fname,
 	int kk;
 	double dz=(jj+0.5)/(nb_dz*i_dz_max);
 	for(kk=0;kk<nb_theta;kk++) {
-	  double theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
+	  double theta;
 	  int index=kk+nb_theta*(jj+nb_dz*ii);
 	  double corr,ercorr;
+	  if(logbin)
+	    theta=pow(10,((kk+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
+	  else
+	    theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
 	  make_CF(DD[index],DR[index],RR[index],sum_wd,sum_wd2,
 		  sum_wr,sum_wr2,&corr,&ercorr);
 	  fprintf(fo,"%lE %lE %lE %lE %lE ",z_mean,dz,theta,corr,ercorr);
@@ -323,9 +327,13 @@ void write_CF(char *fname,
 	int kk;
 	double z2=red_0+(jj+0.5)/(i_red_interval*nb_red);
 	for(kk=0;kk<nb_theta;kk++) {
-	  double theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
+	  double theta;
 	  int index=kk+nb_theta*(jj+nb_red*ii);
 	  double corr,ercorr;
+	  if(logbin)
+	    theta=pow(10,((kk+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
+	  else
+	    theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
 	  make_CF(DD[index],DR[index],RR[index],sum_wd,sum_wd2,
 		  sum_wr,sum_wr2,&corr,&ercorr);
 	  fprintf(fo,"%lE %lE %lE %lE %lE ",z1,z2,theta,corr,ercorr);
