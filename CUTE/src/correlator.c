@@ -120,7 +120,10 @@ void auto_angular_cross_bf(int npix_full,int *indices,
 	      if(prod>cth_aperture) {
 		int ith=th2bin(prod);
 		if((ith<nb_theta)&&(ith>=0)) {
-		  int index=ith+nb_theta*(iz1+nb_red*iz2);
+		  int imin=MIN(iz1,iz2);
+		  int imax=MAX(iz1,iz2);
+		  int index=ith+nb_theta*((imin*(2*nb_red-imin-1))/2+imax);
+		  //		  int index=ith+nb_theta*(iz1+nb_red*iz2);
 #ifdef _WITH_WEIGHTS
 		  hthread[index]+=pos1[3]*pos2[3];
 #else //_WITH_WEIGHTS
@@ -150,7 +153,10 @@ void auto_angular_cross_bf(int npix_full,int *indices,
 		      if(prod>cth_aperture) {
 			int ith=th2bin(prod);
 			if((ith<nb_theta)&&(ith>=0)) {
-			  int index=ith+nb_theta*(iz1+nb_red*iz2);
+			  int imin=MIN(iz1,iz2);
+			  int imax=MAX(iz1,iz2);
+			  int index=ith+nb_theta*((imin*(2*nb_red-imin-1))/2+imax);
+			  //			  int index=ith+nb_theta*(iz1+nb_red*iz2);
 #ifdef _WITH_WEIGHTS
 			  hthread[index]+=pos1[3]*pos2[3];
 #else //_WITH_WEIGHTS
@@ -230,7 +236,10 @@ void cross_angular_cross_bf(int npix_full,int *indices,
 		    if(prod>cth_aperture) {
 		      int ith=th2bin(prod);
 		      if((ith<nb_theta)&&(ith>=0)) {
-			int index=ith+nb_theta*(iz1+nb_red*iz2);
+			int imin=MIN(iz1,iz2);
+			int imax=MAX(iz1,iz2);
+			int index=ith+nb_theta*((imin*(2*nb_red-imin-1))/2+imax);
+			//			int index=ith+nb_theta*(iz1+nb_red*iz2);
 #ifdef _WITH_WEIGHTS
 			hthread[index]+=pos1[3]*pos2[3];
 #else //_WITH_WEIGHTS
@@ -1041,7 +1050,10 @@ void corr_angular_cross_pm(Cell2D *cellsD,Cell2D *cellsD_total,
 		for(iz2=0;iz2<nb_red;iz2++) {
 		  np_t nD2=cellsD[ip2*nb_red+iz2].np;
 		  np_t nR2=cellsR[ip2*nb_red+iz2].np;
-		  int index=iz1+nb_red*(iz2+nb_red*ith);		  
+		  int imin=MIN(iz1,iz2);
+		  int imax=MAX(iz1,iz2);
+		  int index=ith+nb_theta*((imin*(2*nb_red-imin-1))/2+imax);
+		  //		  int index=iz1+nb_red*(iz2+nb_red*ith);		  
 		  DDthread[index]+=nD1*nD2;
 		  DRthread[index]+=nD1*nR2;
 		  RRthread[index]+=nR1*nR2;

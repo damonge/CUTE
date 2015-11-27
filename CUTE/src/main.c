@@ -76,9 +76,9 @@ void run_angular_cross_corr_bf(void)
   int *indices_dat,*indices_ran;
   int nfull_dat,nfull_ran;
 
-  histo_t *DD=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
-  histo_t *DR=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
-  histo_t *RR=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
+  histo_t *DD=(histo_t *)my_calloc(nb_red*(nb_red+1)*nb_theta/2,sizeof(histo_t));
+  histo_t *DR=(histo_t *)my_calloc(nb_red*(nb_red+1)*nb_theta/2,sizeof(histo_t));
+  histo_t *RR=(histo_t *)my_calloc(nb_red*(nb_red+1)*nb_theta/2,sizeof(histo_t));
 
   timer(4);
 
@@ -159,9 +159,9 @@ void run_angular_cross_corr_pm(void)
   int *indices_dat,*indices_ran;
   int nfull_dat,nfull_ran;
 
-  histo_t *DD=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
-  histo_t *DR=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
-  histo_t *RR=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
+  histo_t *DD=(histo_t *)my_calloc(nb_red*(nb_red+1)*nb_theta/2,sizeof(histo_t));
+  histo_t *DR=(histo_t *)my_calloc(nb_red*(nb_red+1)*nb_theta/2,sizeof(histo_t));
+  histo_t *RR=(histo_t *)my_calloc(nb_red*(nb_red+1)*nb_theta/2,sizeof(histo_t));
 
   timer(4);
 

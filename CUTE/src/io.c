@@ -323,12 +323,13 @@ void write_CF(char *fname,
     for(ii=0;ii<nb_red;ii++) {
       int jj;
       double z1=red_0+(ii+0.5)/(i_red_interval*nb_red);
-      for(jj=0;jj<nb_red;jj++) {
+      for(jj=ii;jj<nb_red;jj++) {
 	int kk;
 	double z2=red_0+(jj+0.5)/(i_red_interval*nb_red);
 	for(kk=0;kk<nb_theta;kk++) {
 	  double theta;
-	  int index=kk+nb_theta*(jj+nb_red*ii);
+	  //	  int index=kk+nb_theta*(jj+nb_red*ii);
+	  int index=kk+nb_theta*((ii*(2*nb_red-ii-1))/2+jj);
 	  double corr,ercorr;
 	  if(logbin)
 	    theta=pow(10,((kk+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
