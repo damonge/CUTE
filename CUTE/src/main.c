@@ -136,7 +136,7 @@ void run_angular_cross_corr_bf(void)
 
   printf("\n");
   write_CF(fnameOut,DD,DR,RR,
-	   sum_wd,sum_wd2,sum_wr,sum_wr2);
+  	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
   printf("*** Cleaning up\n");
   free_RadialPixels(n_boxes2D,pixrad_dat);

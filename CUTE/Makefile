@@ -7,8 +7,8 @@ DEFINEOPTIONS = -D_VERBOSE
 #DEFINEOPTIONS += -D_TRUE_ACOS
 DEFINEOPTIONS += -D_WITH_WEIGHTS
 #GSL options
-GSL_INC = /home/damonge/include
-GSL_LIB = /home/damonge/lib
+GSL_INC = /home/dmonge/include
+GSL_LIB = /home/dmonge/lib
 #CUDA options
 NB_H2D = 64
 OPT_PRECISION = -ftz=true -prec-div=false -prec-sqrt=false

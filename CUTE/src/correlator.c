@@ -86,7 +86,7 @@ void auto_angular_cross_bf(int npix_full,int *indices,
   // Radial cross-correlator
   int i;
   
-  for(i=0;i<nb_red*nb_red*nb_theta;i++) 
+  for(i=0;i<(nb_red*(nb_red+1)*nb_theta)/2;i++) 
     hh[i]=0;
   
 #pragma omp parallel default(none)			\
@@ -95,7 +95,7 @@ void auto_angular_cross_bf(int npix_full,int *indices,
   shared(i_red_interval,red_0,i_theta_max)
   {
     int j;
-    histo_t *hthread=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
+    histo_t *hthread=(histo_t *)my_calloc((nb_red*(nb_red+1)*nb_theta)/2,sizeof(histo_t));
     double cth_aperture=cos(1./i_theta_max);
 
 #pragma omp for nowait schedule(dynamic)
@@ -176,7 +176,7 @@ void auto_angular_cross_bf(int npix_full,int *indices,
 
 #pragma omp critical
     {
-      for(j=0;j<nb_red*nb_red*nb_theta;j++)
+      for(j=0;j<(nb_red*(nb_red+1)*nb_theta)/2;j++)
 	hh[j]+=hthread[j];
     }
 
@@ -192,7 +192,7 @@ void cross_angular_cross_bf(int npix_full,int *indices,
   // Radial cross-correlator
   int i;
 
-  for(i=0;i<nb_red*nb_red*nb_theta;i++) 
+  for(i=0;i<(nb_red*(nb_red+1)*nb_theta)/2;i++) 
     hh[i]=0;
 
 #pragma omp parallel default(none)				\
@@ -201,7 +201,7 @@ void cross_angular_cross_bf(int npix_full,int *indices,
   shared(i_red_interval,red_0,i_theta_max)
   {
     int j;
-    histo_t *hthread=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
+    histo_t *hthread=(histo_t *)my_calloc((nb_red*(nb_red+1)*nb_theta)/2,sizeof(histo_t));
     double cth_aperture=cos(1./i_theta_max);
 
 #pragma omp for nowait schedule(dynamic)
@@ -258,7 +258,7 @@ void cross_angular_cross_bf(int npix_full,int *indices,
 
 #pragma omp critical
     {
-      for(j=0;j<nb_red*nb_red*nb_theta;j++)
+      for(j=0;j<(nb_red*(nb_red+1)*nb_theta)/2;j++)
 	hh[j]+=hthread[j];
     }
 
@@ -991,7 +991,7 @@ void corr_angular_cross_pm(Cell2D *cellsD,Cell2D *cellsD_total,
   // PM angular correlator
 
   int i;
-  for(i=0;i<nb_theta*nb_red*nb_red;i++) {
+  for(i=0;i<(nb_red*(nb_red+1)*nb_theta)/2;i++) {
     DD[i]=0;
     DR[i]=0;
     RR[i]=0;
@@ -1003,9 +1003,9 @@ void corr_angular_cross_pm(Cell2D *cellsD,Cell2D *cellsD_total,
   shared(nb_theta,nb_red,i_theta_max)
   {
     int ip1;
-    histo_t *DDthread=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
-    histo_t *DRthread=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
-    histo_t *RRthread=(histo_t *)my_calloc(nb_red*nb_red*nb_theta,sizeof(histo_t));
+    histo_t *DDthread=(histo_t *)my_calloc((nb_red*(nb_red+1)*nb_theta)/2,sizeof(histo_t));
+    histo_t *DRthread=(histo_t *)my_calloc((nb_red*(nb_red+1)*nb_theta)/2,sizeof(histo_t));
+    histo_t *RRthread=(histo_t *)my_calloc((nb_red*(nb_red+1)*nb_theta)/2,sizeof(histo_t));
     double cth_max=cos(1/i_theta_max);
 
 #pragma omp for nowait schedule(dynamic)
@@ -1052,8 +1052,9 @@ void corr_angular_cross_pm(Cell2D *cellsD,Cell2D *cellsD_total,
 		  np_t nR2=cellsR[ip2*nb_red+iz2].np;
 		  int imin=MIN(iz1,iz2);
 		  int imax=MAX(iz1,iz2);
-		  int index=ith+nb_theta*((imin*(2*nb_red-imin-1))/2+imax);
+		  //		  int index=ith+nb_theta*((imin*(2*nb_red-imin-1))/2+imax);
 		  //		  int index=iz1+nb_red*(iz2+nb_red*ith);		  
+		  int index=imax+(imin*(2*nb_red-imin-1))/2+ith*(nb_red*(nb_red+1))/2;
 		  DDthread[index]+=nD1*nD2;
 		  DRthread[index]+=nD1*nR2;
 		  RRthread[index]+=nR1*nR2;
@@ -1071,9 +1072,9 @@ void corr_angular_cross_pm(Cell2D *cellsD,Cell2D *cellsD_total,
 	int iz1;
 	for(iz1=0;iz1<nb_red;iz1++) {
 	  int iz2;
-	  for(iz2=0;iz2<nb_red;iz2++) {
-	    int index_a=ip1+nb_theta*(iz1+nb_red*iz2);
-	    int index_b=iz2+nb_red*(iz1+nb_red*ip1);
+	  for(iz2=iz1;iz2<nb_red;iz2++) {
+	    int index_a=ip1+nb_theta*((iz1*(2*nb_red-iz1-1))/2+iz2);
+	    int index_b=iz2+(iz1*(2*nb_red-iz1-1))/2+ip1*(nb_red*(nb_red+1))/2;
 	    DD[index_a]+=DDthread[index_b];
 	    DR[index_a]+=DRthread[index_b];
 	    RR[index_a]+=RRthread[index_b];
@@ -1087,7 +1088,7 @@ void corr_angular_cross_pm(Cell2D *cellsD,Cell2D *cellsD_total,
     free(RRthread);
   } //end omp parallel
 
-  for(i=0;i<nb_theta*nb_red*nb_red;i++) {
+  for(i=0;i<(nb_red*(nb_red+1)*nb_theta)/2;i++) {
     DD[i]/=2;
     RR[i]/=2;
   }
