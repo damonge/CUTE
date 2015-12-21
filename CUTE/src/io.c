@@ -616,8 +616,8 @@ void process_binner(Binner binner)
   else if(corr_type==3) {
     nb_rl=binner.dim1_nbin;
     i_rl_max=1./binner.dim1_max;
-    nb_rt=binner.dim1_nbin;
-    i_rt_max=1./binner.dim1_max;
+    nb_rt=binner.dim2_nbin;
+    i_rt_max=1./binner.dim2_max;
   }
   else if(corr_type==4) {
     nb_r=binner.dim1_nbin;

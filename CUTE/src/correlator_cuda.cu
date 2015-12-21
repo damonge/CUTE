@@ -125,8 +125,8 @@ __device__ void get_bounds(float *pos,int *bounds)
       float phi_max,phi_min;
       phi_min=phi_lo-dphi;
       phi_max=phi_hi+dphi;
-      bounds[2]=(int)(0.5*phi_min/M_PI*cst_nside_phi);
-      bounds[3]=(int)(0.5*phi_max/M_PI*cst_nside_phi);
+      bounds[2]=(int)(floorf(0.5*phi_min/M_PI*cst_nside_phi));
+      bounds[3]=(int)(floorf(0.5*phi_max/M_PI*cst_nside_phi));
     }
     else {
       bounds[2]=0;

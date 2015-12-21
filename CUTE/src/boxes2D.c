@@ -332,8 +332,8 @@ static void get_pix_bounds(double alpha,int ipix,
       double phi_max,phi_min;
       phi_min=phi_lo-dphi;
       phi_max=phi_hi+dphi;
-      *iphi_min=(int)(0.5*phi_min/M_PI*n_side_phi);
-      *iphi_max=(int)(0.5*phi_max/M_PI*n_side_phi);
+      *iphi_min=(int)(floor(0.5*phi_min/M_PI*n_side_phi));
+      *iphi_max=(int)(floor(0.5*phi_max/M_PI*n_side_phi));
     }
     else {
       *iphi_min=0;
