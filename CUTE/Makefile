@@ -2,6 +2,7 @@
 ###          User definable stuff
 #Behavior options
 DEFINEOPTIONS = -D_VERBOSE
+DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
 #DEFINEOPTIONS += -D_LOGBIN #Only relevant for CU_CUTE
 #DEFINEOPTIONS += -D_DEBUG
 #DEFINEOPTIONS += -D_TRUE_ACOS

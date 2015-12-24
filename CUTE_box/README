@@ -112,6 +112,8 @@ relevant for CUTE_box are:
    >Behavior options: add any of these to the variable DEFINEOPTIONS.
    * -D_VERBOSE  -> extra info will be output.
    * -D_DEBUG    -> creates some debugging files.
+   * -D_HAVE_OMP -> remove this flag if you don't have the OpenMP headers
+                    installed.
    * -D_LOGBIN   -> logarithmic binning will be used. Note that
                     performance will be poorer when using
 		    logarithmic binning. Logarithmic binning is turned

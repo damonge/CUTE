@@ -217,6 +217,8 @@ compile-time options defined at the beginning of the Makefile. These are:
    * -D_TRUE_ACOS    -> the true arccosine will be computed for the
                         angular correlation function (see below for more
 		        details).
+   * -D_HAVE_OMP     -> remove this flag if you don't have the OpenMP headers
+                        installed.
    * -D_LOGBIN       -> logarithmic binning will be used. Only relevant
                         for angular, monopole and 3D (in r-mu) 2PCFs. Note
 		        that performance will be poorer when using

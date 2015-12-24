@@ -26,7 +26,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _HAVE_OMP
 #include <omp.h>
+#endif //_HAVE_OMP
 #include "define.h"
 #include "common.h"
 

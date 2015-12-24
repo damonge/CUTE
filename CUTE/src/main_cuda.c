@@ -28,7 +28,6 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <omp.h>
 #include "define.h"
 #include "common.h"
 #include "correlator_cuda.h"

@@ -7,8 +7,8 @@ R_MAX = 100.
 N_LOGINT = 5
 #Behavior options
 DEFINEOPTIONS = -D_VERBOSE -D_LONGIDS
+DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
 #DEFINEOPTIONS += -D_LOGBIN
-#DEFINEOPTIONS = -D_HAVE_OMP
 ### End of user-definable stuff
 ####################################################
 
