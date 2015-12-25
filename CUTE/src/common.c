@@ -54,7 +54,7 @@ void mpi_init(int* p_argc,char*** p_argv)
 #endif //_HAVE_MPI
 }
 
-void share_iters(int n_iters,int *iter0,int *niter_this)
+void share_iters(int n_iters,int *iter0,int *iterf)
 {
   int i,n;
 
@@ -66,8 +66,11 @@ void share_iters(int n_iters,int *iter0,int *niter_this)
   else
     i=NodeThis*(n_iters/NNodes)+(n_iters%NNodes);
 
+  printf("Node %d : %d iters, will take from %d to %d\n",
+	 NodeThis,n_iters,i,i+n);
+
   *iter0=i;
-  *niter_this=n;
+  *iterf=i+n;
 }
 
 ///////////////////////////

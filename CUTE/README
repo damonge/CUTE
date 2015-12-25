@@ -217,6 +217,14 @@ compile-time options defined at the beginning of the Makefile. These are:
    * -D_TRUE_ACOS    -> the true arccosine will be computed for the
                         angular correlation function (see below for more
 		        details).
+   * -D_HAVE_MPI     -> include this flag if you want to add MPI parallelization.
+                        This is fully compatible with OpenMP. Note, however,
+			that all MPI tasks will store a copy of the data and
+			random catalogs, and so you may run out of memory by
+			spawning too many tasks. An ideal run will create one
+			single MPI task per node, and let OpenMP do the job of
+			parallelizing the computation using all cores in that
+			node.
    * -D_HAVE_OMP     -> remove this flag if you don't have the OpenMP headers
                         installed.
    * -D_LOGBIN       -> logarithmic binning will be used. Only relevant
