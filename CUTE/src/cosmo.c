@@ -104,14 +104,14 @@ void set_r_z(void)
   double rcom_arr[NB_Z_COSMO+1];
   int ii;
 
-  printf("*** Setting z-distance relation ");
+  print_info("*** Setting z-distance relation ");
 #ifdef _VERBOSE
-  printf("from the cosmology:\n");
-  printf(" - Omega_M = %.3lf \n",omega_M);
-  printf(" - Omega_L = %.3lf \n",omega_L);
-  printf(" - w       = %.3lf   ",weos);
+  print_info("from the cosmology:\n");
+  print_info(" - Omega_M = %.3lf \n",omega_M);
+  print_info(" - Omega_L = %.3lf \n",omega_L);
+  print_info(" - w       = %.3lf   ",weos);
 #endif
-  printf("\n");
+  print_info("\n");
 
   //Redshift array
   for(ii=0;ii<=NB_Z_COSMO;ii++) {
@@ -124,7 +124,7 @@ void set_r_z(void)
     double r=rcom_with_integral(z);
     rcom_arr[ii]=r;
   }
-  printf("\n");
+  print_info("\n");
 
   cute_intacc_rcom=gsl_interp_accel_alloc();
   cute_spline_rcom=gsl_spline_alloc(gsl_interp_cspline,NB_Z_COSMO+1);

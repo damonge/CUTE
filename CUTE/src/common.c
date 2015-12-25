@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include "define.h"
 #include "common.h"
+#include <stdarg.h>
 
 //  Timing variables
 #ifdef _HAVE_OMP
@@ -37,6 +38,37 @@ static double relbeg,relend,absbeg,absend;
 #include <time.h>
 static time_t relbeg,relend,absbeg,absend;
 #endif //_HAVE_OMP
+
+int NodeThis=0;
+int NNodes=1;
+
+void mpi_init(int* p_argc,char*** p_argv)
+{
+#ifdef _HAVE_MPI
+  MPI_Init(p_argc,p_argv);
+  MPI_Comm_size(MPI_COMM_WORLD,&NNodes);
+  MPI_Comm_rank(MPI_COMM_WORLD,&NodeThis);
+#else //_HAVE_MPI
+  NodeThis=0;
+  NNodes=1;
+#endif //_HAVE_MPI
+}
+
+void share_iters(int n_iters,int *iter0,int *niter_this)
+{
+  int i,n;
+
+  n=n_iters/NNodes;
+  if(NodeThis<n_iters%NNodes) {
+    n++;
+    i=NodeThis*(n_iters/NNodes+1);
+  }
+  else
+    i=NodeThis*(n_iters/NNodes)+(n_iters%NNodes);
+
+  *iter0=i;
+  *niter_this=n;
+}
 
 ///////////////////////////
 //General purpose functions
@@ -60,6 +92,20 @@ void *my_calloc(size_t nmemb,size_t size)
   }
 
   return outptr;
+}
+
+void print_info(char *fmt,...)
+{
+  if(NodeThis==0) {
+    va_list args;
+    char msg[256];
+    
+    va_start(args,fmt);
+    vsprintf(msg,fmt,args);
+    va_end(args);
+    
+    printf("%s",msg);
+  }
 }
 
 int linecount(FILE *f)
@@ -88,18 +134,18 @@ void timer(int i)
     relbeg=omp_get_wtime();
   else if(i==1) {
     relend=omp_get_wtime();
-    printf("    Relative time ellapsed %.1lf ms\n",1000*(relend-relbeg));
+    print_info("    Relative time ellapsed %.1lf ms\n",1000*(relend-relbeg));
   }    
   else if(i==2) {
     relend=omp_get_wtime();
-    printf("    Relative time ellapsed %.1lf ms\n",1000*(relend-relbeg));
+    print_info("    Relative time ellapsed %.1lf ms\n",1000*(relend-relbeg));
     relbeg=omp_get_wtime();
   }
   else if(i==4)
     absbeg=omp_get_wtime();
   else if(i==5) {
     absend=omp_get_wtime();
-    printf("    Total time ellapsed %.1lf ms \n",1000*(absend-absbeg));
+    print_info("    Total time ellapsed %.1lf ms \n",1000*(absend-absbeg));
   }
 #else //_HAVE_OMP
   int diff;
@@ -109,13 +155,13 @@ void timer(int i)
   else if(i==1) {
     relend=time(NULL);
     diff=(int)(difftime(relend,relbeg));
-    printf("    Relative time ellapsed %02d:%02d:%02d \n",
+    print_info("    Relative time ellapsed %02d:%02d:%02d \n",
 	   diff/3600,(diff/60)%60,diff%60);
   }    
   else if(i==2) {
     relend=time(NULL);
     diff=(int)(difftime(relend,relbeg));
-    printf("    Relative time ellapsed %02d:%02d:%02d \n",
+    print_info("    Relative time ellapsed %02d:%02d:%02d \n",
 	   diff/3600,(diff/60)%60,diff%60);
     relbeg=time(NULL);
   }
@@ -124,7 +170,7 @@ void timer(int i)
   else if(i==5) {
     absend=time(NULL);
     diff=(int)(difftime(absend,absbeg));
-    printf("    Total time ellapsed %02d:%02d:%02d \n",
+    print_info("    Total time ellapsed %02d:%02d:%02d \n",
 	   diff/3600,(diff/60)%60,diff%60);
   }
 #endif //_HAVE_OMP
@@ -179,157 +225,141 @@ void free_Catalog_f(Catalog_f cat)
 #ifdef _DEBUG
 void write_Cells2D(int num_cells,Cell2D *cellmap,char *fn)
 {
-  //////
-  // Writes pixel map into file fn, only used for debugging
-  FILE *fr;
-  int ii;
-  fr=fopen(fn,"w");
-  if(fr==NULL) error_open_file(fn);
-  for(ii=0;ii<num_cells;ii++) {
-    if(cellmap[ii].np>0) {
-      int jj;
-      Cell2DInfo *ci=cellmap[ii].ci;
-      for(jj=0;jj<3;jj++)
-	fprintf(fr,"%lf ",ci->pos[jj]);
+  if(NodeThis==0) {
+    //////
+    // Writes pixel map into file fn, only used for debugging
+    FILE *fr;
+    int ii;
+    fr=fopen(fn,"w");
+    if(fr==NULL) error_open_file(fn);
+    for(ii=0;ii<num_cells;ii++) {
+      if(cellmap[ii].np>0) {
+	int jj;
+	Cell2DInfo *ci=cellmap[ii].ci;
+	for(jj=0;jj<3;jj++)
+	  fprintf(fr,"%lf ",ci->pos[jj]);
 #ifdef _WITH_WEIGHTS
-      fprintf(fr,"%lf\n",cellmap[ii].np);
+	fprintf(fr,"%lf\n",cellmap[ii].np);
 #else //_WITH_WEIGHTS
-      fprintf(fr,"%d\n",cellmap[ii].np);
-#endif //_WITH_WEIGHTS
-    }
-  }
-  fclose(fr);
-}
-
-void write_RadialCells(int num_cells,RadialCell *cellmap,char *fn)
-{
-  //////
-  // Writes pixel map into file fn, only used for debugging
-  FILE *fr;
-  int ii;
-  fr=fopen(fn,"w");
-  if(fr==NULL) error_open_file(fn);
-  for(ii=0;ii<num_cells;ii++) {
-    if(cellmap[ii].np>0) {
-      int jj;
-      Cell2DInfo *ci=cellmap[ii].ci;
-      for(jj=0;jj<cellmap[ii].np;jj++) {
-	int kk;
-	for(kk=0;kk<3;kk++) fprintf(fr,"%lf ",ci->pos[jj]);
-	fprintf(fr,"%lf ",ci->redweight[N_RW*jj]);
-#ifdef _WITH_WEIGHTS
-	fprintf(fr,"%lf\n",ci->redweight[N_RW*jj+1]);
-#else //_WITH_WEIGHTS
-	fprintf(fr,"\n");
+	fprintf(fr,"%d\n",cellmap[ii].np);
 #endif //_WITH_WEIGHTS
       }
     }
+    fclose(fr);
   }
-  fclose(fr);
 }
 
 void write_Boxes2D(int num_boxes,Box2D *boxes,char *fn)
 {
-  //////
-  // Writes pixel map into file fn, only used for debugging
-  FILE *fr;
-  int ii;
-  fr=fopen(fn,"w");
-  if(fr==NULL) error_open_file(fn);
-  for(ii=0;ii<num_boxes;ii++) {
-    if(boxes[ii].np>0) {
-      Box2DInfo *bi=boxes[ii].bi;
-      int jj;
-      for(jj=0;jj<boxes[ii].np;jj++) {
-	int kk;
-	for(kk=0;kk<N_POS;kk++)
-	  fprintf(fr,"%lf ",bi->pos[N_POS*jj+kk]);
-	fprintf(fr,"\n");
+  if(NodeThis==0) {
+    //////
+    // Writes pixel map into file fn, only used for debugging
+    FILE *fr;
+    int ii;
+    fr=fopen(fn,"w");
+    if(fr==NULL) error_open_file(fn);
+    for(ii=0;ii<num_boxes;ii++) {
+      if(boxes[ii].np>0) {
+	Box2DInfo *bi=boxes[ii].bi;
+	int jj;
+	for(jj=0;jj<boxes[ii].np;jj++) {
+	  int kk;
+	  for(kk=0;kk<N_POS;kk++)
+	    fprintf(fr,"%lf ",bi->pos[N_POS*jj+kk]);
+	  fprintf(fr,"\n");
+	}
       }
     }
+    fclose(fr);
   }
-  fclose(fr);
 }
 
 void write_PixRads(int num_pix,RadialPixel *pixrad,char *fn)
 {
-  //////
-  // Writes pixel map into file fn, only used for debugging
-  FILE *fr;
-  int ii;
-  fr=fopen(fn,"w");
-  if(fr==NULL) error_open_file(fn);
-  for(ii=0;ii<num_pix;ii++) {
-    if(pixrad[ii].np>0) {
-      RadialPixelInfo *pi=pixrad[ii].pi;
-      int jj;
-      for(jj=0;jj<pixrad[ii].np;jj++) {
-	int kk;
-	for(kk=0;kk<N_POS;kk++)
-	  fprintf(fr,"%lf ",pi->pos[N_POS*jj+kk]);
-	fprintf(fr,"%lf\n",pi->redshifts[jj]);
+  if(NodeThis==0) {
+    //////
+    // Writes pixel map into file fn, only used for debugging
+    FILE *fr;
+    int ii;
+    fr=fopen(fn,"w");
+    if(fr==NULL) error_open_file(fn);
+    for(ii=0;ii<num_pix;ii++) {
+      if(pixrad[ii].np>0) {
+	RadialPixelInfo *pi=pixrad[ii].pi;
+	int jj;
+	for(jj=0;jj<pixrad[ii].np;jj++) {
+	  int kk;
+	  for(kk=0;kk<N_POS;kk++)
+	    fprintf(fr,"%lf ",pi->pos[N_POS*jj+kk]);
+	  fprintf(fr,"%lf\n",pi->redshifts[jj]);
+	}
       }
     }
+    fclose(fr);
   }
-  fclose(fr);
 }
 
 void write_Boxes3D(int num_boxes,Box3D *boxes,char *fn)
 {
-  //////
-  // Writes pixel map into file fn, only used for debugging
-  FILE *fr;
-  int ii;
-  fr=fopen(fn,"w");
-  if(fr==NULL) error_open_file(fn);
-  for(ii=0;ii<num_boxes;ii++) {
-    if(boxes[ii].np>0) {
-      int jj;
-      for(jj=0;jj<boxes[ii].np;jj++) {
-	int kk;
-	for(kk=0;kk<N_POS;kk++)
-	  fprintf(fr,"%lf ",boxes[ii].pos[N_POS*jj+kk]);
-	fprintf(fr,"\n");
+  if(NodeThis==0) {
+    //////
+    // Writes pixel map into file fn, only used for debugging
+    FILE *fr;
+    int ii;
+    fr=fopen(fn,"w");
+    if(fr==NULL) error_open_file(fn);
+    for(ii=0;ii<num_boxes;ii++) {
+      if(boxes[ii].np>0) {
+	int jj;
+	for(jj=0;jj<boxes[ii].np;jj++) {
+	  int kk;
+	  for(kk=0;kk<N_POS;kk++)
+	    fprintf(fr,"%lf ",boxes[ii].pos[N_POS*jj+kk]);
+	  fprintf(fr,"\n");
+	}
       }
     }
+    fclose(fr);
   }
-  fclose(fr);
 }
 
 void write_Catalog(Catalog cat,char *fn)
 {
-  //////
-  // Writes catalog into file fn, only used for debugging
-  FILE *fr;
-  int ii;
-  fr=fopen(fn,"w");
-  if(fr==NULL) error_open_file(fn);
-  for(ii=0;ii<cat.np;ii++) {
-    fprintf(fr,"%lf %lf %lf ",cat.red[ii],cat.cth[ii],cat.phi[ii]);
+  if(NodeThis==0) {
+    //////
+    // Writes catalog into file fn, only used for debugging
+    FILE *fr;
+    int ii;
+    fr=fopen(fn,"w");
+    if(fr==NULL) error_open_file(fn);
+    for(ii=0;ii<cat.np;ii++) {
+      fprintf(fr,"%lf %lf %lf ",cat.red[ii],cat.cth[ii],cat.phi[ii]);
 #ifdef _WITH_WEIGHTS
-    fprintf(fr,"%lf\n",cat.weight[ii]);
+      fprintf(fr,"%lf\n",cat.weight[ii]);
 #else //_WITH_WEIGHTS
-    fprintf(fr,"\n");
+      fprintf(fr,"\n");
 #endif //_WITH_WEIGHTS
+    }
+    fclose(fr);
   }
-  fclose(fr);
 }
 
 void write_Catalog_f(Catalog_f cat,char *fn)
 {
-  //////
-  // Writes catalog into file fn, only used for debugging
-  FILE *fr;
-  int ii;
-  fr=fopen(fn,"w");
-  if(fr==NULL) error_open_file(fn);
-  for(ii=0;ii<cat.np;ii++) {
-    int kk;
-    for(kk=0;kk<3;kk++)
-      fprintf(fr,"%f ",cat.pos[3*ii+kk]);
-    fprintf(fr,"\n");
+  if(NodeThis==0) {
+    //////
+    // Writes catalog into file fn, only used for debugging
+    FILE *fr;
+    int ii;
+    fr=fopen(fn,"w");
+    if(fr==NULL) error_open_file(fn);
+    for(ii=0;ii<cat.np;ii++) {
+      int kk;
+      for(kk=0;kk<3;kk++)
+	fprintf(fr,"%f ",cat.pos[3*ii+kk]);
+      fprintf(fr,"\n");
+    }
+    fclose(fr);
   }
-  fclose(fr);
 }
-
 #endif //_DEBUG

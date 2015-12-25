@@ -153,8 +153,8 @@ void init_2D_params_f(float *cth_min,float *cth_max,
   n_boxes2D=n_side_phi*n_side_cth;
 
   double pixel_resolution=sqrt(4*M_PI/n_boxes2D)/DTORAD;
-  printf("  There will be %d pixels in total\n",n_boxes2D);
-  printf("  Pixel resolution is %.4lf deg \n",pixel_resolution);
+  print_info("  There will be %d pixels in total\n",n_boxes2D);
+  print_info("  Pixel resolution is %.4lf deg \n",pixel_resolution);
 }
 
 void mk_Boxes2D_from_Catalog_f(Catalog_f cat,float **box_pos,
@@ -183,7 +183,7 @@ void mk_Boxes2D_from_Catalog_f(Catalog_f cat,float **box_pos,
     (*box_np)[ibox]++;
   }
 
-  printf("  There are objects in %d out of %d boxes \n",nfull,n_boxes2D);
+  print_info("  There are objects in %d out of %d boxes \n",nfull,n_boxes2D);
   int np_tot=0;
   for(ii=0;ii<n_boxes2D;ii++) {
     int npar=(*box_np)[ii];
@@ -291,8 +291,8 @@ void mk_Cells2D_from_Catalog_f(Catalog_f cat_dat,Catalog_f cat_ran,
   }
 
   double pixel_resolution=sqrt(4*M_PI/n_boxes2D)/DTORAD;
-  printf("  There will be %d pixels in total\n",npixtot);
-  printf("  Pixel resolution is %.4lf deg \n",pixel_resolution);
+  print_info("  There will be %d pixels in total\n",npixtot);
+  print_info("  Pixel resolution is %.4lf deg \n",pixel_resolution);
 }
 
 static int optimal_nside(double lb,double rmax,int np)
@@ -403,9 +403,9 @@ void init_3D_params_f(float pos_min[],
   pos_min[1]=(float)y_min_bound;
   pos_min[2]=(float)z_min_bound;
 
-  printf("  There will be (%d,%d,%d) = %d boxes in total\n",
+  print_info("  There will be (%d,%d,%d) = %d boxes in total\n",
 	 n_side[0],n_side[1],n_side[2],n_boxes3D);
-  printf("  Boxes will be (dx,dy,dz) = (%.3lf,%.3lf,%.3lf) \n",
+  print_info("  Boxes will be (dx,dy,dz) = (%.3lf,%.3lf,%.3lf) \n",
 	 dx,dy,dz);
 }
 
@@ -429,7 +429,7 @@ void mk_Boxes3D_from_Catalog_f(Catalog_f cat,float **box_pos,
     (*box_np)[ibox]++;
   }
 
-  printf("  There are objects in %d out of %d boxes \n",nfull,n_boxes3D);
+  print_info("  There are objects in %d out of %d boxes \n",nfull,n_boxes3D);
 
   int np_tot=0;
   for(ii=0;ii<n_boxes3D;ii++) {

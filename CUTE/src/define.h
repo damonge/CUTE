@@ -23,6 +23,10 @@
 #ifndef _CUTE_DEFINE_
 #define _CUTE_DEFINE_
 
+#ifdef _HAVE_MPI
+#include <mpi.h>
+#endif //_HAVE_MPI
+
 extern char fnameData[128];
 extern char fnameRandom[128];
 extern char fnameOut[128];
@@ -104,11 +108,17 @@ extern double l_box[3];
 #define N_POS 4
 typedef double histo_t;
 typedef double np_t;
+#ifdef _HAVE_MPI
+#define HISTO_T_MPI MPI_DOUBLE
+#endif //_HAVE_MPI
 #else //_WITH_WEIGHTS
 #define N_RW 1
 #define N_POS 3
 typedef unsigned long long histo_t;
 typedef int np_t;
+#ifdef _HAVE_MPI
+#define HISTO_T_MPI MPI_UNSIGNED_LONG_LONG
+#endif //_HAVE_MPI
 #endif //_WITH_WEIGHTS
 
 //Cell for angular 2PCF

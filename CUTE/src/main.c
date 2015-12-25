@@ -85,62 +85,62 @@ void run_angular_cross_corr_bf(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Angular cross-correlations: \n");
-  printf(" - Redshift range: %.3lf < z_mean < %.3lf\n",
+  print_info("*** Angular cross-correlations: \n");
+  print_info(" - Redshift range: %.3lf < z_mean < %.3lf\n",
 	 red_0,red_0+1./i_red_interval);
-  printf(" - # redshift bins: %d\n",nb_red);
-  printf(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
+  print_info(" - # redshift bins: %d\n",nb_red);
+  print_info(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
 
-  printf(" - Angular range: %.3lf < theta < %.3lf \n",
+  print_info(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
-  printf(" - # angular bins : %d\n",nb_theta);
+  print_info(" - # angular bins : %d\n",nb_theta);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-  printf(" - Resolution: D(theta) = %.3lf \n",
+  print_info(" - Resolution: D(theta) = %.3lf \n",
 	 1./(i_theta_max*nb_theta*DTORAD));
   }
 
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_2D_params(cat_dat,cat_ran,5);
   pixrad_dat=mk_RadialPixels_from_Catalog(cat_dat,&indices_dat,&nfull_dat,5);
   free_Catalog(cat_dat);
   pixrad_ran=mk_RadialPixels_from_Catalog(cat_ran,&indices_ran,&nfull_ran,5);
   free_Catalog(cat_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_PixRads(n_boxes2D,pixrad_dat,"debug_PixRadDat.dat");
   write_PixRads(n_boxes2D,pixrad_ran,"debug_PixRadRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
-  printf(" - Auto-correlating data \n");
+  print_info("*** Correlating \n");
+  print_info(" - Auto-correlating data \n");
   timer(0);
   auto_angular_cross_bf(nfull_dat,indices_dat,pixrad_dat,DD);
   timer(2);
-  printf(" - Auto-correlating random \n");
+  print_info(" - Auto-correlating random \n");
   auto_angular_cross_bf(nfull_ran,indices_ran,pixrad_ran,RR);
   timer(2);
-  printf(" - Cross-correlating \n");
+  print_info(" - Cross-correlating \n");
   cross_angular_cross_bf(nfull_dat,indices_dat,
 			 pixrad_dat,pixrad_ran,DR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
   	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_RadialPixels(n_boxes2D,pixrad_dat);
   free_RadialPixels(n_boxes2D,pixrad_ran);
   free(indices_dat);
@@ -168,32 +168,32 @@ void run_angular_cross_corr_pm(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Angular cross-correlations: \n");
-  printf(" - Redshift range: %.3lf < z_mean < %.3lf\n",
+  print_info("*** Angular cross-correlations: \n");
+  print_info(" - Redshift range: %.3lf < z_mean < %.3lf\n",
 	 red_0,red_0+1./i_red_interval);
-  printf(" - # redshift bins: %d\n",nb_red);
-  printf(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
+  print_info(" - # redshift bins: %d\n",nb_red);
+  print_info(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
 
-  printf(" - Angular range: %.3lf < theta < %.3lf \n",
+  print_info(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
-  printf(" - # angular bins : %d\n",nb_theta);
+  print_info(" - # angular bins : %d\n",nb_theta);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-  printf(" - Resolution: D(theta) = %.3lf \n",
+  print_info(" - Resolution: D(theta) = %.3lf \n",
 	 1./(i_theta_max*nb_theta*DTORAD));
   }
 
-  printf(" - Using a PM approach \n");
-  printf("\n");
+  print_info(" - Using a PM approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_2D_params(cat_dat,cat_ran,1);
   cells_dat=mk_Cells2D_many_from_Catalog(cat_dat,&indices_dat,&cells_dat_total,&nfull_dat);
   free_Catalog(cat_dat);
@@ -201,25 +201,25 @@ void run_angular_cross_corr_pm(void)
   cells_ran=mk_Cells2D_many_from_Catalog(cat_ran,&indices_ran,&cells_ran_total,&nfull_ran);
   free_Catalog(cat_ran);
   free(indices_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_Cells2D(n_boxes2D,cells_dat_total,"debug_Cell2DDat.dat");
   write_Cells2D(n_boxes2D,cells_ran_total,"debug_Cell2DRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_angular_cross_pm(cells_dat,cells_dat_total,
 			cells_ran,cells_ran_total,
 			DD,DR,RR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_Cells2D(nb_red*n_boxes2D,cells_dat);
   free_Cells2D(nb_red*n_boxes2D,cells_ran);
   free_Cells2D(n_boxes2D,cells_dat_total);
@@ -247,68 +247,68 @@ void run_full_corr_bf(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Full correlation function: \n");
-  printf(" - Redshift range: %.3lf < z_mean < %.3lf\n",
+  print_info("*** Full correlation function: \n");
+  print_info(" - Redshift range: %.3lf < z_mean < %.3lf\n",
 	 red_0,red_0+1./i_red_interval);
-  printf(" - # redshift bins: %d\n",nb_red);
-  printf(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
+  print_info(" - # redshift bins: %d\n",nb_red);
+  print_info(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
 
-  printf(" - Angular range: %.3lf < theta < %.3lf \n",
+  print_info(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
-  printf(" - # angular bins : %d\n",nb_theta);
+  print_info(" - # angular bins : %d\n",nb_theta);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-  printf(" - Resolution: D(theta) = %.3lf \n",
+  print_info(" - Resolution: D(theta) = %.3lf \n",
 	 1./(i_theta_max*nb_theta*DTORAD));
   }
 
-  printf(" - Radial range: %.3lf < Dz < %.3lf \n",
+  print_info(" - Radial range: %.3lf < Dz < %.3lf \n",
 	 0.,1/i_dz_max);
-  printf(" - # radial bins : %d\n",nb_dz);
-  printf(" - Radial resolution: D(Dz) = %.3lf \n",
+  print_info(" - # radial bins : %d\n",nb_dz);
+  print_info(" - Radial resolution: D(Dz) = %.3lf \n",
 	 1./(i_dz_max*nb_dz));
 
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_2D_params(cat_dat,cat_ran,5);
   pixrad_dat=mk_RadialPixels_from_Catalog(cat_dat,&indices_dat,&nfull_dat,5);
   free_Catalog(cat_dat);
   pixrad_ran=mk_RadialPixels_from_Catalog(cat_ran,&indices_ran,&nfull_ran,5);
   free_Catalog(cat_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_PixRads(n_boxes2D,pixrad_dat,"debug_PixRadDat.dat");
   write_PixRads(n_boxes2D,pixrad_ran,"debug_PixRadRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
-  printf(" - Auto-correlating data \n");
+  print_info("*** Correlating \n");
+  print_info(" - Auto-correlating data \n");
   timer(0);
   auto_full_bf(nfull_dat,indices_dat,pixrad_dat,DD);
   timer(2);
-  printf(" - Auto-correlating random \n");
+  print_info(" - Auto-correlating random \n");
   auto_full_bf(nfull_ran,indices_ran,pixrad_ran,RR);
   timer(2);
-  printf(" - Cross-correlating \n");
+  print_info(" - Cross-correlating \n");
   cross_full_bf(nfull_dat,indices_dat,
 	       pixrad_dat,pixrad_ran,DR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_RadialPixels(n_boxes2D,pixrad_dat);
   free_RadialPixels(n_boxes2D,pixrad_ran);
   free(indices_dat);
@@ -334,60 +334,55 @@ void run_full_corr_pm(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Full correlation function: \n");
-  printf(" - Redshift range: %.3lf < z_mean < %.3lf\n",
+  print_info("*** Full correlation function: \n");
+  print_info(" - Redshift range: %.3lf < z_mean < %.3lf\n",
 	 red_0,red_0+1./i_red_interval);
-  printf(" - # redshift bins: %d\n",nb_red);
-  printf(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
+  print_info(" - # redshift bins: %d\n",nb_red);
+  print_info(" - Redshift bin width: %.3lf\n",1/(i_red_interval*nb_red));
 
-  printf(" - Angular range: %.3lf < theta < %.3lf \n",
+  print_info(" - Angular range: %.3lf < theta < %.3lf \n",
 	 0.,1./(i_theta_max*DTORAD));
-  printf(" - # angular bins : %d\n",nb_theta);
+  print_info(" - # angular bins : %d\n",nb_theta);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-  printf(" - Resolution: D(theta) = %.3lf \n",
+  print_info(" - Resolution: D(theta) = %.3lf \n",
 	 1./(i_theta_max*nb_theta*DTORAD));
   }
 
-  printf(" - Radial range: %.3lf < Dz < %.3lf \n",
+  print_info(" - Radial range: %.3lf < Dz < %.3lf \n",
 	 0.,1/i_dz_max);
-  printf(" - # radial bins : %d\n",nb_dz);
-  printf(" - Radial resolution: D(Dz) = %.3lf \n",
+  print_info(" - # radial bins : %d\n",nb_dz);
+  print_info(" - Radial resolution: D(Dz) = %.3lf \n",
 	 1./(i_dz_max*nb_dz));
 
-  printf(" - Using a PM approach \n");
-  printf("\n");
+  print_info(" - Using a PM approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_2D_params(cat_dat,cat_ran,5);
   radcell_dat=mk_RadialCells_from_Catalog(cat_dat);
   free_Catalog(cat_dat);
   radcell_ran=mk_RadialCells_from_Catalog(cat_ran);
   free_Catalog(cat_ran);
-  printf("\n");
-  
-#ifdef _DEBUG
-  write_RadialCells(n_boxes2D,radcell_dat,"debug_RadCellDat.dat");
-  write_RadialCells(n_boxes2D,radcell_ran,"debug_RadCellRan.dat");
-#endif //_DEBUG
+  print_info("\n");
 
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_full_pm(radcell_dat,radcell_ran,DD,DR,RR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_RadialCells(n_boxes2D,radcell_dat);
   free_RadialCells(n_boxes2D,radcell_ran);
   free(DD);
@@ -413,52 +408,52 @@ void run_radial_corr_bf(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Radial correlation function: \n");
-  printf(" - Range: %.3lf < Dz < %.3lf \n",
+  print_info("*** Radial correlation function: \n");
+  print_info(" - Range: %.3lf < Dz < %.3lf \n",
 	 0.,1/i_dz_max);
-  printf(" - #bins: %d\n",nb_dz);
-  printf(" - Resolution: D(Dz) = %.3lf \n",
+  print_info(" - #bins: %d\n",nb_dz);
+  print_info(" - Resolution: D(Dz) = %.3lf \n",
 	 1./(i_dz_max*nb_dz));
-  printf(" - Using a brute-force approach \n");
-  printf(" - Colinear galaxies within Dtheta = %.3lf (deg) \n",
+  print_info(" - Using a brute-force approach \n");
+  print_info(" - Colinear galaxies within Dtheta = %.3lf (deg) \n",
 	 aperture_los/DTORAD);
-  printf("\n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_2D_params(cat_dat,cat_ran,0);
   pixrad_dat=mk_RadialPixels_from_Catalog(cat_dat,&indices_dat,&nfull_dat,0);
   free_Catalog(cat_dat);
   pixrad_ran=mk_RadialPixels_from_Catalog(cat_ran,&indices_ran,&nfull_ran,0);
   free_Catalog(cat_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_PixRads(n_boxes2D,pixrad_dat,"debug_PixRadDat.dat");
   write_PixRads(n_boxes2D,pixrad_ran,"debug_PixRadRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
-  printf(" - Auto-correlating data \n");
+  print_info("*** Correlating \n");
+  print_info(" - Auto-correlating data \n");
   timer(0);
   auto_rad_bf(nfull_dat,indices_dat,pixrad_dat,DD);
   timer(2);
-  printf(" - Auto-correlating random \n");
+  print_info(" - Auto-correlating random \n");
   auto_rad_bf(nfull_ran,indices_ran,pixrad_ran,RR);
   timer(2);
-  printf(" - Cross-correlating \n");
+  print_info(" - Cross-correlating \n");
   cross_rad_bf(nfull_dat,indices_dat,
 	       pixrad_dat,pixrad_ran,DR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_RadialPixels(n_boxes2D,pixrad_dat);
   free_RadialPixels(n_boxes2D,pixrad_ran);
   free(indices_dat);
@@ -486,56 +481,56 @@ void run_angular_corr_bf(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Angular correlation function: \n");
-  printf(" - Range: %.3lf < theta < %.3lf (deg)\n",
+  print_info("*** Angular correlation function: \n");
+  print_info(" - Range: %.3lf < theta < %.3lf (deg)\n",
 	 0.,1/(i_theta_max*DTORAD));
-  printf(" - #bins: %d\n",nb_theta);
+  print_info(" - #bins: %d\n",nb_theta);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-  printf(" - Resolution: D(theta) = %.3lf \n",
+  print_info(" - Resolution: D(theta) = %.3lf \n",
 	 1./(i_theta_max*nb_theta*DTORAD));
   }
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_2D_params(cat_dat,cat_ran,1);
   boxes_dat=mk_Boxes2D_from_Catalog(cat_dat,&indices_dat,&nfull_dat);
   free_Catalog(cat_dat);
   boxes_ran=mk_Boxes2D_from_Catalog(cat_ran,&indices_ran,&nfull_ran);
   free_Catalog(cat_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_Boxes2D(n_boxes2D,boxes_dat,"debug_Box2DDat.dat");
   write_Boxes2D(n_boxes2D,boxes_ran,"debug_Box2DRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
-  printf(" - Auto-correlating data \n");
+  print_info("*** Correlating \n");
+  print_info(" - Auto-correlating data \n");
   timer(0);
   auto_ang_bf(nfull_dat,indices_dat,boxes_dat,DD);
   timer(2);
-  printf(" - Auto-correlating random \n");
+  print_info(" - Auto-correlating random \n");
   auto_ang_bf(nfull_ran,indices_ran,boxes_ran,RR);
   timer(2);
-  printf(" - Cross-correlating \n");
+  print_info(" - Cross-correlating \n");
   cross_ang_bf(nfull_dat,indices_dat,
 	       boxes_dat,boxes_ran,DR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_Boxes2D(n_boxes2D,boxes_dat);
   free_Boxes2D(n_boxes2D,boxes_ran);
   free(indices_dat);
@@ -563,26 +558,26 @@ void run_angular_corr_pm(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Angular correlation function: \n");
-  printf(" - Range: %.3lf < theta < %.3lf (deg)\n",
+  print_info("*** Angular correlation function: \n");
+  print_info(" - Range: %.3lf < theta < %.3lf (deg)\n",
 	 0.,1/(i_theta_max*DTORAD));
-  printf(" - #bins: %d\n",nb_theta);
+  print_info(" - #bins: %d\n",nb_theta);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-    printf(" - Resolution: D(theta) = %.3lf \n",
+    print_info(" - Resolution: D(theta) = %.3lf \n",
 	   1./(i_theta_max*nb_theta*DTORAD));
   }
-  printf(" - Using a PM approach \n");
-  printf("\n");
+  print_info(" - Using a PM approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_2D_params(cat_dat,cat_ran,1);
   cells_dat=mk_Cells2D_from_Catalog(cat_dat,&indices_dat,&nfull_dat);
   free_Catalog(cat_dat);
@@ -590,23 +585,23 @@ void run_angular_corr_pm(void)
   cells_ran=mk_Cells2D_from_Catalog(cat_ran,&indices_ran,&nfull_ran);
   free_Catalog(cat_ran);
   free(indices_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_Cells2D(n_boxes2D,cells_dat,"debug_Cell2DDat.dat");
   write_Cells2D(n_boxes2D,cells_ran,"debug_Cell2DRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_ang_pm(cells_dat,cells_ran,DD,DR,RR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_Cells2D(n_boxes2D,cells_dat);
   free_Cells2D(n_boxes2D,cells_ran);
   free(DD);
@@ -634,56 +629,56 @@ void run_monopole_corr_bf(void)
   set_r_z();
 
 #ifdef _VERBOSE
-  printf("*** Monopole correlation function: \n");
-  printf(" - Range: %.3lf < r < %.3lf Mpc/h\n",
+  print_info("*** Monopole correlation function: \n");
+  print_info(" - Range: %.3lf < r < %.3lf Mpc/h\n",
 	 0.,1/i_r_max);
-  printf(" - #bins: %d\n",nb_r);
+  print_info(" - #bins: %d\n",nb_r);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-    printf(" - Resolution: D(r) = %.3lf Mpc/h\n",
+    print_info(" - Resolution: D(r) = %.3lf Mpc/h\n",
 	   1./(i_r_max*nb_r));
   }
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_3D_params(cat_dat,cat_ran,2);
   boxes_dat=mk_Boxes3D_from_Catalog(cat_dat,&indices_dat,&nfull_dat);
   free_Catalog(cat_dat);
   boxes_ran=mk_Boxes3D_from_Catalog(cat_ran,&indices_ran,&nfull_ran);
   free_Catalog(cat_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_Boxes3D(n_boxes3D,boxes_dat,"debug_Box3DDat.dat");
   write_Boxes3D(n_boxes3D,boxes_ran,"debug_Box3DRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
-  printf(" - Auto-correlating data \n");
+  print_info("*** Correlating \n");
+  print_info(" - Auto-correlating data \n");
   timer(0);
   auto_mono_bf(nfull_dat,indices_dat,boxes_dat,DD);
   timer(2);
-  printf(" - Auto-correlating random \n");
+  print_info(" - Auto-correlating random \n");
   auto_mono_bf(nfull_ran,indices_ran,boxes_ran,RR);
   timer(2);
-  printf(" - Cross-correlating \n");
+  print_info(" - Cross-correlating \n");
   cross_mono_bf(nfull_dat,indices_dat,
 	       boxes_dat,boxes_ran,DR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_Boxes3D(n_boxes3D,boxes_dat);
   free_Boxes3D(n_boxes3D,boxes_ran);
   free(indices_dat);
@@ -714,50 +709,50 @@ void run_3d_ps_corr_bf(void)
   set_r_z();
 
 #ifdef _VERBOSE
-  printf("*** 3D correlation function (pi,sigma): \n");
-  printf(" - Range: (%.3lf,%.3lf) < (pi,sigma) < (%.3lf,%.3lf) Mpc/h\n",
+  print_info("*** 3D correlation function (pi,sigma): \n");
+  print_info(" - Range: (%.3lf,%.3lf) < (pi,sigma) < (%.3lf,%.3lf) Mpc/h\n",
 	 0.,0.,1/i_rl_max,1/i_rt_max);
-  printf(" - #bins: (%d,%d)\n",nb_rl,nb_rt);
-  printf(" - Resolution: (d(pi),d(sigma)) = (%.3lf,%.3lf) Mpc/h\n",
+  print_info(" - #bins: (%d,%d)\n",nb_rl,nb_rt);
+  print_info(" - Resolution: (d(pi),d(sigma)) = (%.3lf,%.3lf) Mpc/h\n",
 	 1./(i_rl_max*nb_rl),1./(i_rt_max*nb_rt));
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_3D_params(cat_dat,cat_ran,3);
   boxes_dat=mk_Boxes3D_from_Catalog(cat_dat,&indices_dat,&nfull_dat);
   free_Catalog(cat_dat);
   boxes_ran=mk_Boxes3D_from_Catalog(cat_ran,&indices_ran,&nfull_ran);
   free_Catalog(cat_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_Boxes3D(n_boxes3D,boxes_dat,"debug_Box3DDat.dat");
   write_Boxes3D(n_boxes3D,boxes_ran,"debug_Box3DRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
-  printf(" - Auto-correlating data \n");
+  print_info("*** Correlating \n");
+  print_info(" - Auto-correlating data \n");
   timer(0);
   auto_3d_ps_bf(nfull_dat,indices_dat,boxes_dat,DD);
   timer(2);
-  printf(" - Auto-correlating random \n");
+  print_info(" - Auto-correlating random \n");
   auto_3d_ps_bf(nfull_ran,indices_ran,boxes_ran,RR);
   timer(2);
-  printf(" - Cross-correlating \n");
+  print_info(" - Cross-correlating \n");
   cross_3d_ps_bf(nfull_dat,indices_dat,
 		 boxes_dat,boxes_ran,DR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_Boxes3D(n_boxes3D,boxes_dat);
   free_Boxes3D(n_boxes3D,boxes_ran);
   free(indices_dat);
@@ -788,58 +783,58 @@ void run_3d_rm_corr_bf(void)
   set_r_z();
 
 #ifdef _VERBOSE
-  printf("*** 3D correlation function (r,mu): \n");
-  printf(" - Range: %.3lf < r < %.3lf Mpc/h\n",
+  print_info("*** 3D correlation function (r,mu): \n");
+  print_info(" - Range: %.3lf < r < %.3lf Mpc/h\n",
 	 0.,1/i_r_max);
-  printf(" - #bins: %d\n",nb_r);
-  printf(" - Range: 0.000 < mu < 1.000\n");
-  printf(" - #bins: %d\n",nb_mu);
+  print_info(" - #bins: %d\n",nb_r);
+  print_info(" - Range: 0.000 < mu < 1.000\n");
+  print_info(" - #bins: %d\n",nb_mu);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade\n",
+    print_info(" - Logarithmic binning with %d bins per decade\n",
 	   n_logint);
   }
   else {
-    printf(" - Resolution: d(r) = %.3lf Mpc/h\n",
+    print_info(" - Resolution: d(r) = %.3lf Mpc/h\n",
 	   1./(i_r_max*nb_r));
   }
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran,
 		   &sum_wd,&sum_wd2,&sum_wr,&sum_wr2);
   
-  printf("*** Boxing catalogs \n");
+  print_info("*** Boxing catalogs \n");
   init_3D_params(cat_dat,cat_ran,4);
   boxes_dat=mk_Boxes3D_from_Catalog(cat_dat,&indices_dat,&nfull_dat);
   free_Catalog(cat_dat);
   boxes_ran=mk_Boxes3D_from_Catalog(cat_ran,&indices_ran,&nfull_ran);
   free_Catalog(cat_ran);
-  printf("\n");
+  print_info("\n");
   
 #ifdef _DEBUG
   write_Boxes3D(n_boxes3D,boxes_dat,"debug_Box3DDat.dat");
   write_Boxes3D(n_boxes3D,boxes_ran,"debug_Box3DRan.dat");
 #endif //_DEBUG
 
-  printf("*** Correlating \n");
-  printf(" - Auto-correlating data \n");
+  print_info("*** Correlating \n");
+  print_info(" - Auto-correlating data \n");
   timer(0);
   auto_3d_rm_bf(nfull_dat,indices_dat,boxes_dat,DD);
   timer(2);
-  printf(" - Auto-correlating random \n");
+  print_info(" - Auto-correlating random \n");
   auto_3d_rm_bf(nfull_ran,indices_ran,boxes_ran,RR);
   timer(2);
-  printf(" - Cross-correlating \n");
+  print_info(" - Cross-correlating \n");
   cross_3d_rm_bf(nfull_dat,indices_dat,
 		 boxes_dat,boxes_ran,DR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF(fnameOut,DD,DR,RR,
 	   sum_wd,sum_wd2,sum_wr,sum_wr2);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free_Boxes3D(n_boxes3D,boxes_dat);
   free_Boxes3D(n_boxes3D,boxes_ran);
   free(indices_dat);
@@ -857,17 +852,19 @@ int main(int argc,char **argv)
   int ii;
   char fnameIn[128];
   if(argc!=2) {
-    printf("Usage ./CUTE <input file>\n");
+    print_info("Usage ./CUTE <input file>\n");
     exit(1);
   }
   sprintf(fnameIn,"%s",argv[1]);
 
+  mpi_init(&argc,&argv);
+
   setbuf(stdout, NULL);
 
-  printf("\n");
-  printf("-----------------------------------------------------------\n");
-  printf("|| CUTE - Correlation Utilities and Two-point Estimation ||\n");
-  printf("-----------------------------------------------------------\n\n");
+  print_info("\n");
+  print_info("-----------------------------------------------------------\n");
+  print_info("|| CUTE - Correlation Utilities and Two-point Estimation ||\n");
+  print_info("-----------------------------------------------------------\n\n");
 
   //Initialize random number generator
 #ifdef _DEBUG
@@ -876,8 +873,8 @@ int main(int argc,char **argv)
   srand(time(NULL));
 #endif
 #ifdef _VERBOSE
-  printf("Initializing random number generator\n");
-  printf("First random number : %d \n",rand());
+  print_info("Initializing random number generator\n");
+  print_info("First random number : %d \n",rand());
 #endif
 
 #ifdef _VERBOSE
@@ -888,9 +885,9 @@ int main(int argc,char **argv)
 #pragma omp atomic
     ii++;
   }
-  printf("Using %d threads \n",ii);
+  print_info("Using %d threads \n",ii);
 #endif
-  printf("\n");
+  print_info("\n");
 
   read_run_params(fnameIn);
   
@@ -927,7 +924,11 @@ int main(int argc,char **argv)
     fprintf(stderr,"CUTE: wrong correlation type.\n");
     exit(0);
   }
-  printf("             Done !!!             \n");
+  print_info("             Done !!!             \n");
+
+#ifdef _HAVE_MPI
+  MPI_Finalize();
+#endif //_HAVE_MPI
 
   return 0;
 }

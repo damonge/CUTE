@@ -23,7 +23,14 @@
 #ifndef _CUTE_COMMON_
 #define _CUTE_COMMON_
 
+extern int NodeThis;
+extern int NNodes;
+void mpi_init(int* p_argc,char*** p_argv);
+void share_iters(int n_iters,int *iter0,int *niter_this);
+
 //General-purpose functions
+void print_info(char *fmt,...);
+
 void *my_malloc(size_t size);
 
 void *my_calloc(size_t nmemb,size_t size);

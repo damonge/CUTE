@@ -57,11 +57,11 @@ void read_red_dist(void)
 
   fdist=fopen(fnamedNdz,"r");
   if(fdist==NULL) error_open_file(fnamedNdz);
-  printf("*** Reading redshift selection function ");
+  print_info("*** Reading redshift selection function ");
 #ifdef _VERBOSE
-  printf("from file %s",fnamedNdz);
+  print_info("from file %s",fnamedNdz);
 #endif //_VERBOSE
-  printf("\n");
+  print_info("\n");
 
   n_z_dist=linecount(fdist);
   rewind(fdist);
@@ -99,7 +99,7 @@ void read_red_dist(void)
   free(zarr);
   free(dndz_dist_arr);
   
-  printf("\n");
+  print_info("\n");
 }
 
 static double num_dens_z(double rsh)
@@ -147,9 +147,9 @@ void read_mask(void)
   FILE *fmask;
   int ii;
   
-  printf("*** Reading mask ");
+  print_info("*** Reading mask ");
 #ifdef _VERBOSE
-  printf("from file %s\n",fnameMask);
+  print_info("from file %s\n",fnameMask);
 #endif //_VERBOSE
   fmask=fopen(fnameMask,"r");
   if(fmask==NULL) {
@@ -158,14 +158,14 @@ void read_mask(void)
   }
   n_mask_regions=linecount(fmask);
 #ifdef _VERBOSE
-  printf("  There are %d mask regions\n",n_mask_regions);
+  print_info("  There are %d mask regions\n",n_mask_regions);
 #endif //_VERBOSE
   rewind(fmask);
   
   mask=my_malloc(sizeof(MaskRegion)*n_mask_regions);
 #ifdef _VERBOSE
-  printf("  Mask is: \n");
-  printf("  (z0,zf), (cth0,cthf), (phi0,phif)\n");
+  print_info("  Mask is: \n");
+  print_info("  (z0,zf), (cth0,cthf), (phi0,phif)\n");
 #endif //_VERBOSE
   for(ii=0;ii<n_mask_regions;ii++) {
     int sr;
@@ -183,7 +183,7 @@ void read_mask(void)
 	      mask[ii].cthf,mask[ii].phi0,mask[ii].phif);
     }
 #ifdef _VERBOSE
-    printf("  (%.3lf,%.3lf), (%.3lf,%.3lf), (%.3lf,%.3lf)\n",
+    print_info("  (%.3lf,%.3lf), (%.3lf,%.3lf), (%.3lf,%.3lf)\n",
 	   (mask[ii]).z0,(mask[ii]).zf,
 	   (mask[ii]).cth0,(mask[ii]).cthf,
 	   (mask[ii]).phi0,(mask[ii]).phif);
@@ -213,8 +213,8 @@ void read_mask(void)
       phi_max_mask=(mask[ii]).phif;
   }
 #ifdef _VERBOSE
-  printf("  Mask absolute limits: \n");
-  printf("  (%.3lf,%.3lf), (%.3lf,%.3lf), (%.3lf,%.3lf)\n",
+  print_info("  Mask absolute limits: \n");
+  print_info("  (%.3lf,%.3lf), (%.3lf,%.3lf), (%.3lf,%.3lf)\n",
 	 red_min_mask,red_max_mask,cth_min_mask,cth_max_mask,
 	 phi_min_mask,phi_max_mask);
 #endif //_VERBOSE
@@ -228,7 +228,7 @@ void read_mask(void)
   phi_max_mask+=0.001*(phi_max_mask-phi_min_mask);
 
   mask_set=1;
-  printf("\n");
+  print_info("\n");
 }
 
 static int in_mask(double zz,double cth,double phi) 
@@ -268,11 +268,11 @@ Catalog mk_random_cat(int np)
   int ir;
   Catalog cat;
 
-  printf("*** Creating random catalog ");
+  print_info("*** Creating random catalog ");
 #ifdef _VERBOSE
-  printf("with %d objects",np);
+  print_info("with %d objects",np);
 #endif
-  printf("\n");
+  print_info("\n");
 
   //Allocate memory for catalog
   cat.np=np;
@@ -317,11 +317,11 @@ Catalog_f mk_random_cat_f(int np)
   int ir;
   Catalog_f cat;
 
-  printf("*** Creating random catalog ");
+  print_info("*** Creating random catalog ");
 #ifdef _VERBOSE
-  printf("with %d objects",np);
+  print_info("with %d objects",np);
 #endif
-  printf("\n");
+  print_info("\n");
 
   //Allocate memory for catalog
   cat.np=np;

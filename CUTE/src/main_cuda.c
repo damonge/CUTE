@@ -82,45 +82,45 @@ void run_angular_corr_pm(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Angular correlation function: \n");
-  printf(" - Range: %.3lf < theta < %.3lf (deg)\n",
+  print_info("*** Angular correlation function: \n");
+  print_info(" - Range: %.3lf < theta < %.3lf (deg)\n",
 	 0.,1/(DTORAD*i_theta_max));
-  printf(" - #bins: %d\n",NB_HISTO_1D);
+  print_info(" - #bins: %d\n",NB_HISTO_1D);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade",
+    print_info(" - Logarithmic binning with %d bins per decade",
 	   n_logint);
   }
   else {
-    printf(" - Resolution: D(theta) = %.3lf \n",
+    print_info(" - Resolution: D(theta) = %.3lf \n",
 	   1./(i_theta_max*NB_HISTO_1D*DTORAD));
   }
-  printf(" - Using a PM approach \n");
-  printf("\n");
+  print_info(" - Using a PM approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran);
   n_dat=cat_dat.np;
   n_ran=cat_ran.np;
   
-  printf("*** Boxing catalog \n");
+  print_info("*** Boxing catalog \n");
   init_2D_params_f(&cth_min,&cth_max,cat_dat,cat_ran);
   mk_Cells2D_from_Catalog_f(cat_dat,cat_ran,&npix,&pix_full,
 			    &pix_dat,&pix_ran,&pos_pix);
   free_Catalog_f(cat_dat);
   free_Catalog_f(cat_ran);
-  printf("\n");
+  print_info("\n");
 
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_CUDA_AngPM(cth_min,cth_max,
 		  npix,pix_full,pos_pix,
 		  pix_dat,pix_ran,DD,DR,RR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF_cuda(fnameOut,DD,DR,RR,n_dat,n_ran);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free(pos_pix);
   free(pix_dat);
   free(pix_ran);
@@ -145,27 +145,27 @@ void run_angular_corr_bf(void)
   timer(4);
 
 #ifdef _VERBOSE
-  printf("*** Angular correlation function: \n");
-  printf(" - Range: %.3lf < theta < %.3lf (deg)\n",
+  print_info("*** Angular correlation function: \n");
+  print_info(" - Range: %.3lf < theta < %.3lf (deg)\n",
 	 0.,1/(i_theta_max*DTORAD));
-  printf(" - #bins: %d\n",NB_HISTO_1D);
+  print_info(" - #bins: %d\n",NB_HISTO_1D);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade",
+    print_info(" - Logarithmic binning with %d bins per decade",
 	   n_logint);
   }
   else {
-    printf(" - Resolution: D(theta) = %.3lf \n",
+    print_info(" - Resolution: D(theta) = %.3lf \n",
 	   1./(i_theta_max*NB_HISTO_1D*DTORAD));
   }
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran);
   n_dat=cat_dat.np;
   n_ran=cat_ran.np;
 
-  printf("*** Boxing catalog \n");
+  print_info("*** Boxing catalog \n");
   init_2D_params_f(&cth_min,&cth_max,cat_dat,cat_ran);
   mk_Boxes2D_from_Catalog_f(cat_dat,&box_pos_dat,
 			    &box_np_dat,&box_ind_dat);
@@ -173,9 +173,9 @@ void run_angular_corr_bf(void)
   mk_Boxes2D_from_Catalog_f(cat_ran,&box_pos_ran,
 			    &box_np_ran,&box_ind_ran);
   free_Catalog_f(cat_ran);
-  printf("\n");
+  print_info("\n");
 
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_CUDA_Ang(cth_min,cth_max,
 		n_dat,box_np_dat,
@@ -185,10 +185,10 @@ void run_angular_corr_bf(void)
 		DD,DR,RR);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF_cuda(fnameOut,DD,DR,RR,n_dat,n_ran);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free(box_np_dat);
   free(box_np_ran);
   free(box_pos_dat);
@@ -217,27 +217,27 @@ void run_monopole_corr_bf(void)
   set_r_z();
 
 #ifdef _VERBOSE
-  printf("*** Monopole correlation function: \n");
-  printf(" - Range: %.3lf < r < %.3lf Mpc/h\n",
+  print_info("*** Monopole correlation function: \n");
+  print_info(" - Range: %.3lf < r < %.3lf Mpc/h\n",
 	 0.,1/i_r_max);
-  printf(" - #bins: %d\n",NB_HISTO_1D);
+  print_info(" - #bins: %d\n",NB_HISTO_1D);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade",
+    print_info(" - Logarithmic binning with %d bins per decade",
 	   n_logint);
   }
   else {
-    printf(" - Resolution: D(r) = %.3lf Mpc/h\n",
+    print_info(" - Resolution: D(r) = %.3lf Mpc/h\n",
 	   1./(i_r_max*NB_HISTO_1D));
   }
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran);
   n_dat=cat_dat.np;
   n_ran=cat_ran.np;
 
-  printf("*** Boxing catalog \n");
+  print_info("*** Boxing catalog \n");
   init_3D_params_f(pos_min,cat_dat,cat_ran,2);
   mk_Boxes3D_from_Catalog_f(cat_dat,&box_pos_dat,
 			    &box_np_dat,&box_ind_dat);
@@ -245,9 +245,9 @@ void run_monopole_corr_bf(void)
   mk_Boxes3D_from_Catalog_f(cat_ran,&box_pos_ran,
 			    &box_np_ran,&box_ind_ran);
   free_Catalog_f(cat_ran);
-  printf("\n");
+  print_info("\n");
 
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_CUDA_3D(pos_min,
 	       n_dat,box_np_dat,
@@ -257,10 +257,10 @@ void run_monopole_corr_bf(void)
 	       DD,DR,RR,2);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF_cuda(fnameOut,DD,DR,RR,n_dat,n_ran);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free(box_np_dat);
   free(box_np_ran);
   free(box_pos_dat);
@@ -291,21 +291,21 @@ void run_3d_ps_corr_bf(void)
   set_r_z();
 
 #ifdef _VERBOSE
-  printf("*** 3D correlation function (pi,sigma): \n");
-  printf(" - Range: (%.3lf,%.3lf) < (pi,sigma) < (%.3lf,%.3lf) Mpc/h\n",
+  print_info("*** 3D correlation function (pi,sigma): \n");
+  print_info(" - Range: (%.3lf,%.3lf) < (pi,sigma) < (%.3lf,%.3lf) Mpc/h\n",
 	 0.,0.,1/i_rl_max,1/i_rt_max);
-  printf(" - #bins: (%d,%d)\n",NB_HISTO_2D,NB_HISTO_2D);
-  printf(" - Resolution: (d(pi),d(sigma)) = (%.3lf,%.3lf) Mpc/h\n",
+  print_info(" - #bins: (%d,%d)\n",NB_HISTO_2D,NB_HISTO_2D);
+  print_info(" - Resolution: (d(pi),d(sigma)) = (%.3lf,%.3lf) Mpc/h\n",
 	 1./(i_rl_max*NB_HISTO_2D),1./(i_rt_max*NB_HISTO_2D));
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran);
   n_dat=cat_dat.np;
   n_ran=cat_ran.np;
   
-  printf("*** Boxing catalog \n");
+  print_info("*** Boxing catalog \n");
   init_3D_params_f(pos_min,cat_dat,cat_ran,2);
   mk_Boxes3D_from_Catalog_f(cat_dat,&box_pos_dat,
 			    &box_np_dat,&box_ind_dat);
@@ -313,9 +313,9 @@ void run_3d_ps_corr_bf(void)
   mk_Boxes3D_from_Catalog_f(cat_ran,&box_pos_ran,
 			    &box_np_ran,&box_ind_ran);
   free_Catalog_f(cat_ran);
-  printf("\n");
+  print_info("\n");
 
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_CUDA_3D(pos_min,
 	       n_dat,box_np_dat,
@@ -325,10 +325,10 @@ void run_3d_ps_corr_bf(void)
 	       DD,DR,RR,3);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF_cuda(fnameOut,DD,DR,RR,n_dat,n_ran);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free(box_np_dat);
   free(box_np_ran);
   free(box_pos_dat);
@@ -359,29 +359,29 @@ void run_3d_rm_corr_bf(void)
   set_r_z();
 
 #ifdef _VERBOSE
-  printf("*** 3D correlation function (r,mu): \n");
-  printf(" - Range: %.3lf < r < %.3lf Mpc/h\n",
+  print_info("*** 3D correlation function (r,mu): \n");
+  print_info(" - Range: %.3lf < r < %.3lf Mpc/h\n",
 	 0.,1/i_r_max);
-  printf(" - #bins: %d\n",NB_HISTO_2D);
-  printf(" - Range: 0.000 < mu < 1.000\n");
-  printf(" - #bins: %d\n",NB_HISTO_2D);
+  print_info(" - #bins: %d\n",NB_HISTO_2D);
+  print_info(" - Range: 0.000 < mu < 1.000\n");
+  print_info(" - #bins: %d\n",NB_HISTO_2D);
   if(logbin) {
-    printf(" - Logarithmic binning with %d bins per decade",
+    print_info(" - Logarithmic binning with %d bins per decade",
 	   n_logint);
   }
   else {
-    printf(" - Resolution: d(r) = %.3lf Mpc/h\n",
+    print_info(" - Resolution: d(r) = %.3lf Mpc/h\n",
 	   1./(i_r_max*NB_HISTO_2D));
   }
-  printf(" - Using a brute-force approach \n");
-  printf("\n");
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
 #endif
 
   read_dr_catalogs(&cat_dat,&cat_ran);
   n_dat=cat_dat.np;
   n_ran=cat_ran.np;
   
-  printf("*** Boxing catalog \n");
+  print_info("*** Boxing catalog \n");
   init_3D_params_f(pos_min,cat_dat,cat_ran,2);
   mk_Boxes3D_from_Catalog_f(cat_dat,&box_pos_dat,
 			    &box_np_dat,&box_ind_dat);
@@ -389,9 +389,9 @@ void run_3d_rm_corr_bf(void)
   mk_Boxes3D_from_Catalog_f(cat_ran,&box_pos_ran,
 			    &box_np_ran,&box_ind_ran);
   free_Catalog_f(cat_ran);
-  printf("\n");
+  print_info("\n");
   
-  printf("*** Correlating \n");
+  print_info("*** Correlating \n");
   timer(0);
   corr_CUDA_3D(pos_min,
 	       n_dat,box_np_dat,
@@ -401,10 +401,10 @@ void run_3d_rm_corr_bf(void)
 	       DD,DR,RR,4);
   timer(1);
 
-  printf("\n");
+  print_info("\n");
   write_CF_cuda(fnameOut,DD,DR,RR,n_dat,n_ran);
 
-  printf("*** Cleaning up\n");
+  print_info("*** Cleaning up\n");
   free(box_np_dat);
   free(box_np_ran);
   free(box_pos_dat);
@@ -421,7 +421,7 @@ int main(int argc,char **argv)
   // Main routine
   char fnameIn[128];
   if(argc!=3) {
-    printf("Usage ./CU_CUTE <input file> <n_blocks>\n");
+    print_info("Usage ./CU_CUTE <input file> <n_blocks>\n");
     exit(1);
   }
   sprintf(fnameIn,"%s",argv[1]);
@@ -429,10 +429,10 @@ int main(int argc,char **argv)
 
   setbuf(stdout, NULL);
 
-  printf("\n");
-  printf("-----------------------------------------------------------\n");
-  printf("|| CUTE - Correlation Utilities and Two-point Estimation ||\n");
-  printf("-----------------------------------------------------------\n\n");
+  print_info("\n");
+  print_info("-----------------------------------------------------------\n");
+  print_info("|| CUTE - Correlation Utilities and Two-point Estimation ||\n");
+  print_info("-----------------------------------------------------------\n\n");
 
   //Initialize random number generator
 #ifdef _DEBUG
@@ -441,11 +441,11 @@ int main(int argc,char **argv)
   srand(time(NULL));
 #endif
 #ifdef _VERBOSE
-  printf("Initializing random number generator\n");
-  printf("First random number : %d \n",rand());
-  printf("Using %d CUDA blocks \n",n_blocks);
+  print_info("Initializing random number generator\n");
+  print_info("First random number : %d \n",rand());
+  print_info("Using %d CUDA blocks \n",n_blocks);
 #endif
-  printf("\n");
+  print_info("\n");
   
   read_run_params(fnameIn);
   
@@ -480,7 +480,7 @@ int main(int argc,char **argv)
     fprintf(stderr,"CUTE: wrong correlation type.\n");
     exit(0);
   }
-  printf("             Done !!!             \n");
+  print_info("             Done !!!             \n");
 
   return 0;
 }

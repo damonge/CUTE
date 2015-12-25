@@ -178,178 +178,212 @@ void write_CF(char *fname,
 {
   //////
   // Writes correlation function to file fname
-  FILE *fo;
-  int ii;
+#ifdef _HAVE_MPI
+  int n_bins_all=0;
 
-  printf("*** Writing output file ");
+  if(corr_type==0)
+    n_bins_all=nb_dz;
+  else if(corr_type==1)
+    n_bins_all=nb_theta;
+  else if(corr_type==2)
+    n_bins_all=nb_r;
+  else if(corr_type==3)
+    n_bins_all=nb_rt*nb_rl;
+  else if(corr_type==4)
+    n_bins_all=nb_r*nb_mu;
+  else if(corr_type==5)
+    n_bins_all=nb_red*nb_dz*nb_theta;
+  else if(corr_type==6)
+    n_bins_all=nb_theta*((nb_red*(nb_red+1))/2);
+
+  if(NodeThis==0)
+    MPI_Reduce(MPI_IN_PLACE,DD,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+  else
+    MPI_Reduce(DD,NULL,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+  if(NodeThis==0)
+    MPI_Reduce(MPI_IN_PLACE,DR,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+  else
+    MPI_Reduce(DR,NULL,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+  if(NodeThis==0)
+    MPI_Reduce(MPI_IN_PLACE,RR,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+  else
+    MPI_Reduce(RR,NULL,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+#endif //_HAVE_MPI
+
+  if(NodeThis==0) {
+    FILE *fo;
+    int ii;
+    
+    print_info("*** Writing output file ");
 #ifdef _VERBOSE
-  printf("%s ",fname);
+    print_info("%s ",fname);
 #endif
-  printf("\n");
+    print_info("\n");
 
-  fo=fopen(fname,"w");
-  if(fo==NULL) {
-    char oname[64]="output_CUTE.dat";
-    fprintf(stderr,"Error opening output file %s",fname);
-    fprintf(stderr," using ./output_CUTE.dat");
-    fo=fopen(oname,"w");
-    if(fo==NULL) error_open_file(oname);
-  }
-
-  if(corr_type==0) {
-    for(ii=0;ii<nb_dz;ii++) {
-      double dz;
-      double corr,ercorr;
-      make_CF(DD[ii],DR[ii],RR[ii],sum_wd,sum_wd2,
-	      sum_wr,sum_wr2,&corr,&ercorr);
-      dz=(ii+0.5)/(nb_dz*i_dz_max);
-      fprintf(fo,"%lE %lE %lE ",dz,corr,ercorr);
-#ifdef _WITH_WEIGHTS
-      fprintf(fo,"%lE %lE %lE\n",DD[ii],DR[ii],RR[ii]);
-#else //_WITH_WEIGHTS
-      fprintf(fo,"%llu %llu %llu\n",DD[ii],DR[ii],RR[ii]);
-#endif //_WITH_WEIGHTS
+    fo=fopen(fname,"w");
+    if(fo==NULL) {
+      char oname[64]="output_CUTE.dat";
+      fprintf(stderr,"Error opening output file %s",fname);
+      fprintf(stderr," using ./output_CUTE.dat");
+      fo=fopen(oname,"w");
+      if(fo==NULL) error_open_file(oname);
     }
-  }
-  else if(corr_type==1) {
-    for(ii=0;ii<nb_theta;ii++) {
-      double th;
-      double corr,ercorr;
-      make_CF(DD[ii],DR[ii],RR[ii],sum_wd,sum_wd2,
-	      sum_wr,sum_wr2,&corr,&ercorr);
-      if(logbin)
-	th=pow(10,((ii+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
-      else
-	th=(ii+0.5)/(nb_theta*i_theta_max*DTORAD);
-
-      fprintf(fo,"%lE %lE %lE ",th,corr,ercorr);
-#ifdef _WITH_WEIGHTS
-      fprintf(fo,"%lE %lE %lE\n",DD[ii],DR[ii],RR[ii]);
-#else //_WITH_WEIGHTS
-      fprintf(fo,"%llu %llu %llu\n",DD[ii],DR[ii],RR[ii]);
-#endif //_WITH_WEIGHTS
-    }
-  }
-  else if(corr_type==2) {
-    for(ii=0;ii<nb_r;ii++) {
-      double rr;
-      double corr,ercorr;
-      make_CF(DD[ii],DR[ii],RR[ii],sum_wd,sum_wd2,
-	      sum_wr,sum_wr2,&corr,&ercorr);
-      if(logbin)
-	rr=pow(10,((ii+0.5)-nb_r)/n_logint+log_r_max);
-      else
-	rr=(ii+0.5)/(nb_r*i_r_max);
-
-      fprintf(fo,"%lE %lE %lE ",rr,corr,ercorr);
-#ifdef _WITH_WEIGHTS
-      fprintf(fo,"%lE %lE %lE\n",DD[ii],DR[ii],RR[ii]);
-#else //_WITH_WEIGHTS
-      fprintf(fo,"%llu %llu %llu\n",DD[ii],DR[ii],RR[ii]);
-#endif //_WITH_WEIGHTS
-    }
-  }
-  else if(corr_type==3) {
-    for(ii=0;ii<nb_rt;ii++) {
-      int jj;
-      double rt=(ii+0.5)/(nb_rt*i_rt_max);
-      for(jj=0;jj<nb_rl;jj++) {
+    
+    if(corr_type==0) {
+      for(ii=0;ii<nb_dz;ii++) {
+	double dz;
 	double corr,ercorr;
-	double rl=(jj+0.5)/(nb_rl*i_rl_max);
-	int ind=jj+nb_rl*ii;
-	make_CF(DD[ind],DR[ind],RR[ind],sum_wd,sum_wd2,
+	make_CF(DD[ii],DR[ii],RR[ii],sum_wd,sum_wd2,
 		sum_wr,sum_wr2,&corr,&ercorr);
-	fprintf(fo,"%lE %lE %lE %lE ",rl,rt,corr,ercorr);
+	dz=(ii+0.5)/(nb_dz*i_dz_max);
+	fprintf(fo,"%lE %lE %lE ",dz,corr,ercorr);
 #ifdef _WITH_WEIGHTS
-	fprintf(fo,"%lE %lE %lE\n",DD[ind],DR[ind],RR[ind]);
+	fprintf(fo,"%lE %lE %lE\n",DD[ii],DR[ii],RR[ii]);
 #else //_WITH_WEIGHTS
-	fprintf(fo,"%llu %llu %llu\n",DD[ind],DR[ind],RR[ind]);
+	fprintf(fo,"%llu %llu %llu\n",DD[ii],DR[ii],RR[ii]);
 #endif //_WITH_WEIGHTS
       }
     }
-  }
-  else if(corr_type==4) {
-    for(ii=0;ii<nb_r;ii++) {
-      int jj;
-      double rr;
-      if(logbin)
-	rr=pow(10,((ii+0.5)-nb_r)/n_logint+log_r_max);
-      else
-	rr=(ii+0.5)/(nb_r*i_r_max);
-
-      for(jj=0;jj<nb_mu;jj++) {
+    else if(corr_type==1) {
+      for(ii=0;ii<nb_theta;ii++) {
+	double th;
 	double corr,ercorr;
-	double mu=(jj+0.5)/(nb_mu);
-	int ind=jj+nb_mu*ii;
-	make_CF(DD[ind],DR[ind],RR[ind],sum_wd,sum_wd2,
+	make_CF(DD[ii],DR[ii],RR[ii],sum_wd,sum_wd2,
 		sum_wr,sum_wr2,&corr,&ercorr);
-	fprintf(fo,"%lE %lE %lE %lE ",mu,rr,corr,ercorr);
+	if(logbin)
+	  th=pow(10,((ii+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
+	else
+	  th=(ii+0.5)/(nb_theta*i_theta_max*DTORAD);
+	
+	fprintf(fo,"%lE %lE %lE ",th,corr,ercorr);
 #ifdef _WITH_WEIGHTS
-	fprintf(fo,"%lE %lE %lE\n",DD[ind],DR[ind],RR[ind]);
+	fprintf(fo,"%lE %lE %lE\n",DD[ii],DR[ii],RR[ii]);
 #else //_WITH_WEIGHTS
-	fprintf(fo,"%llu %llu %llu\n",DD[ind],DR[ind],RR[ind]);
+	fprintf(fo,"%llu %llu %llu\n",DD[ii],DR[ii],RR[ii]);
 #endif //_WITH_WEIGHTS
       }
     }
-  }
-  else if(corr_type==5) {
-    for(ii=0;ii<nb_red;ii++) {
-      int jj;
-      double z_mean=red_0+(ii+0.5)/(i_red_interval*nb_red);
-      for(jj=0;jj<nb_dz;jj++) {
-	int kk;
-	double dz=(jj+0.5)/(nb_dz*i_dz_max);
-	for(kk=0;kk<nb_theta;kk++) {
-	  double theta;
-	  int index=kk+nb_theta*(jj+nb_dz*ii);
+    else if(corr_type==2) {
+      for(ii=0;ii<nb_r;ii++) {
+	double rr;
+	double corr,ercorr;
+	make_CF(DD[ii],DR[ii],RR[ii],sum_wd,sum_wd2,
+		sum_wr,sum_wr2,&corr,&ercorr);
+	if(logbin)
+	  rr=pow(10,((ii+0.5)-nb_r)/n_logint+log_r_max);
+	else
+	  rr=(ii+0.5)/(nb_r*i_r_max);
+	
+	fprintf(fo,"%lE %lE %lE ",rr,corr,ercorr);
+#ifdef _WITH_WEIGHTS
+	fprintf(fo,"%lE %lE %lE\n",DD[ii],DR[ii],RR[ii]);
+#else //_WITH_WEIGHTS
+	fprintf(fo,"%llu %llu %llu\n",DD[ii],DR[ii],RR[ii]);
+#endif //_WITH_WEIGHTS
+      }
+    }
+    else if(corr_type==3) {
+      for(ii=0;ii<nb_rt;ii++) {
+	int jj;
+	double rt=(ii+0.5)/(nb_rt*i_rt_max);
+	for(jj=0;jj<nb_rl;jj++) {
 	  double corr,ercorr;
-	  if(logbin)
-	    theta=pow(10,((kk+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
-	  else
-	    theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
-	  make_CF(DD[index],DR[index],RR[index],sum_wd,sum_wd2,
+	  double rl=(jj+0.5)/(nb_rl*i_rl_max);
+	  int ind=jj+nb_rl*ii;
+	  make_CF(DD[ind],DR[ind],RR[ind],sum_wd,sum_wd2,
 		  sum_wr,sum_wr2,&corr,&ercorr);
-	  fprintf(fo,"%lE %lE %lE %lE %lE ",z_mean,dz,theta,corr,ercorr);
+	  fprintf(fo,"%lE %lE %lE %lE ",rl,rt,corr,ercorr);
 #ifdef _WITH_WEIGHTS
-	  fprintf(fo,"%lE %lE %lE\n",DD[index],DR[index],RR[index]);
+	  fprintf(fo,"%lE %lE %lE\n",DD[ind],DR[ind],RR[ind]);
 #else //_WITH_WEIGHTS
-	  fprintf(fo,"%llu %llu %llu\n",DD[index],DR[index],RR[index]);
+	  fprintf(fo,"%llu %llu %llu\n",DD[ind],DR[ind],RR[ind]);
 #endif //_WITH_WEIGHTS
 	}
       }
     }
-  }
-  else if(corr_type==6) {
-    for(ii=0;ii<nb_red;ii++) {
-      int jj;
-      double z1=red_0+(ii+0.5)/(i_red_interval*nb_red);
-      for(jj=ii;jj<nb_red;jj++) {
-	int kk;
-	double z2=red_0+(jj+0.5)/(i_red_interval*nb_red);
-	for(kk=0;kk<nb_theta;kk++) {
-	  double theta;
-	  //	  int index=kk+nb_theta*(jj+nb_red*ii);
-	  int index=kk+nb_theta*((ii*(2*nb_red-ii-1))/2+jj);
+    else if(corr_type==4) {
+      for(ii=0;ii<nb_r;ii++) {
+	int jj;
+	double rr;
+	if(logbin)
+	  rr=pow(10,((ii+0.5)-nb_r)/n_logint+log_r_max);
+	else
+	  rr=(ii+0.5)/(nb_r*i_r_max);
+	
+	for(jj=0;jj<nb_mu;jj++) {
 	  double corr,ercorr;
-	  if(logbin)
-	    theta=pow(10,((kk+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
-	  else
-	    theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
-	  make_CF(DD[index],DR[index],RR[index],sum_wd,sum_wd2,
+	  double mu=(jj+0.5)/(nb_mu);
+	  int ind=jj+nb_mu*ii;
+	  make_CF(DD[ind],DR[ind],RR[ind],sum_wd,sum_wd2,
 		  sum_wr,sum_wr2,&corr,&ercorr);
-	  fprintf(fo,"%lE %lE %lE %lE %lE ",z1,z2,theta,corr,ercorr);
+	  fprintf(fo,"%lE %lE %lE %lE ",mu,rr,corr,ercorr);
 #ifdef _WITH_WEIGHTS
-	  fprintf(fo,"%lE %lE %lE\n",DD[index],DR[index],RR[index]);
+	  fprintf(fo,"%lE %lE %lE\n",DD[ind],DR[ind],RR[ind]);
 #else //_WITH_WEIGHTS
-	  fprintf(fo,"%llu %llu %llu\n",DD[index],DR[index],RR[index]);
+	  fprintf(fo,"%llu %llu %llu\n",DD[ind],DR[ind],RR[ind]);
 #endif //_WITH_WEIGHTS
 	}
       }
     }
+    else if(corr_type==5) {
+      for(ii=0;ii<nb_red;ii++) {
+	int jj;
+	double z_mean=red_0+(ii+0.5)/(i_red_interval*nb_red);
+	for(jj=0;jj<nb_dz;jj++) {
+	  int kk;
+	  double dz=(jj+0.5)/(nb_dz*i_dz_max);
+	  for(kk=0;kk<nb_theta;kk++) {
+	    double theta;
+	    int index=kk+nb_theta*(jj+nb_dz*ii);
+	    double corr,ercorr;
+	    if(logbin)
+	      theta=pow(10,((kk+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
+	    else
+	      theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
+	    make_CF(DD[index],DR[index],RR[index],sum_wd,sum_wd2,
+		    sum_wr,sum_wr2,&corr,&ercorr);
+	    fprintf(fo,"%lE %lE %lE %lE %lE ",z_mean,dz,theta,corr,ercorr);
+#ifdef _WITH_WEIGHTS
+	    fprintf(fo,"%lE %lE %lE\n",DD[index],DR[index],RR[index]);
+#else //_WITH_WEIGHTS
+	    fprintf(fo,"%llu %llu %llu\n",DD[index],DR[index],RR[index]);
+#endif //_WITH_WEIGHTS
+	  }
+	}
+      }
+    }
+    else if(corr_type==6) {
+      for(ii=0;ii<nb_red;ii++) {
+	int jj;
+	double z1=red_0+(ii+0.5)/(i_red_interval*nb_red);
+	for(jj=ii;jj<nb_red;jj++) {
+	  int kk;
+	  double z2=red_0+(jj+0.5)/(i_red_interval*nb_red);
+	  for(kk=0;kk<nb_theta;kk++) {
+	    double theta;
+	    //	  int index=kk+nb_theta*(jj+nb_red*ii);
+	    int index=kk+nb_theta*((ii*(2*nb_red-ii-1))/2+jj);
+	    double corr,ercorr;
+	    if(logbin)
+	      theta=pow(10,((kk+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
+	    else
+	      theta=(kk+0.5)/(nb_theta*i_theta_max*DTORAD);
+	    make_CF(DD[index],DR[index],RR[index],sum_wd,sum_wd2,
+		    sum_wr,sum_wr2,&corr,&ercorr);
+	    fprintf(fo,"%lE %lE %lE %lE %lE ",z1,z2,theta,corr,ercorr);
+#ifdef _WITH_WEIGHTS
+	    fprintf(fo,"%lE %lE %lE\n",DD[index],DR[index],RR[index]);
+#else //_WITH_WEIGHTS
+	    fprintf(fo,"%llu %llu %llu\n",DD[index],DR[index],RR[index]);
+#endif //_WITH_WEIGHTS
+	  }
+	}
+      }
+    }
+    fclose(fo);
+    
+    printf("\n");
   }
-  fclose(fo);
-  
-  printf("\n");
 }
 
 void write_CF_cuda(char *fname,unsigned long long *DD,
@@ -361,11 +395,11 @@ void write_CF_cuda(char *fname,unsigned long long *DD,
   FILE *fo;
   int ii;
 
-  printf("*** Writing output file ");
+  print_info("*** Writing output file ");
 #ifdef _VERBOSE
-  printf("%s ",fname);
+  print_info("%s ",fname);
 #endif
-  printf("\n");
+  print_info("\n");
 
   fo=fopen(fname,"w");
   if(fo==NULL) {
@@ -447,7 +481,7 @@ void write_CF_cuda(char *fname,unsigned long long *DD,
   }
   fclose(fo);
   
-  printf("\n");
+  print_info("\n");
 }
 
 static void check_params(void)
@@ -667,7 +701,7 @@ void read_run_params(char *fname)
   binner.logbin=-1;
   binner.n_logint=-1;
 
-  printf("*** Reading run parameters \n");
+  print_info("*** Reading run parameters \n");
 
   //Read parameters from file
   fi=fopen(fname,"r");
@@ -776,17 +810,17 @@ void read_run_params(char *fname)
   check_params();
 
 #ifdef _VERBOSE
-  printf("  Using estimator: %s\n",estim);
+  print_info("  Using estimator: %s\n",estim);
   if(gen_ran) {
-    printf("  The random catalog will be generated ");
+    print_info("  The random catalog will be generated ");
     if(fact_n_rand==1)
-      printf("with as many particles as in the data \n");
+      print_info("with as many particles as in the data \n");
     else
-      printf("with %d times more particles than the data \n",fact_n_rand);
+      print_info("with %d times more particles than the data \n",fact_n_rand);
   }
 #endif //_VERBOSE
 
-  printf("\n");
+  print_info("\n");
 }
 
 Catalog read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
@@ -799,11 +833,11 @@ Catalog read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
   double z_mean=0;
   Catalog cat;
 
-  printf("*** Reading catalog ");
+  print_info("*** Reading catalog ");
 #ifdef _VERBOSE
-  printf("from file %s",fname);
+  print_info("from file %s",fname);
 #endif
-  printf("\n");
+  print_info("\n");
 
   //Open file and count lines
   fd=fopen(fname,"r");
@@ -813,7 +847,7 @@ Catalog read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
   else
     ng=n_objects;
   rewind(fd);
-  printf("  %d lines in the catalog\n",ng);
+  print_info("  %d lines in the catalog\n",ng);
 
   //Allocate catalog memory
   cat.np=ng;
@@ -868,16 +902,16 @@ Catalog read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
 
   z_mean/=ng;
 #ifdef _VERBOSE
-  printf("  The average redshift is %lf\n",z_mean);
+  print_info("  The average redshift is %lf\n",z_mean);
 #endif //_VERBOSE
 
 #ifdef _WITH_WEIGHTS
-  printf("  Effective n. of particles: %lf\n",(*sum_w));
+  print_info("  Effective n. of particles: %lf\n",(*sum_w));
 #else //_WITH_WEIGHTS
-  printf("  Total n. of particles read: %d\n",(*sum_w));
+  print_info("  Total n. of particles read: %d\n",(*sum_w));
 #endif //_WITH_WEIGHTS
 
-  printf("\n");
+  print_info("\n");
   return cat;
 }
 
@@ -891,11 +925,11 @@ Catalog_f read_catalog_f(char *fname,int *np)
   double z_mean=0;
   Catalog_f cat;
 
-  printf("*** Reading catalog ");
+  print_info("*** Reading catalog ");
 #ifdef _VERBOSE
-  printf("from file %s",fname);
+  print_info("from file %s",fname);
 #endif
-  printf("\n");
+  print_info("\n");
 
   //Open file and count lines
   fd=fopen(fname,"r");
@@ -940,9 +974,9 @@ Catalog_f read_catalog_f(char *fname,int *np)
 
   z_mean/=ng;
 #ifdef _VERBOSE
-  printf("  The average redshift is %lf\n",z_mean);
+  print_info("  The average redshift is %lf\n",z_mean);
 #endif //_VERBOSE
 
-  printf("\n");
+  print_info("\n");
   return cat;
 }

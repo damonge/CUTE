@@ -1,6 +1,8 @@
 ####################################################
 ###          User definable stuff
 #Behavior options
+#Use MPI parallelization? Set to "yes" or "no"
+USE_MPI = yes
 DEFINEOPTIONS = -D_VERBOSE
 DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
 #DEFINEOPTIONS += -D_LOGBIN #Only relevant for CU_CUTE
@@ -19,39 +21,20 @@ CUDADIR = /usr/local/cuda
 
 LGSL = -L$(GSL_LIB) -lgsl -lgslcblas
 
-#Transform to inverse scales
-#I_R_MAX = $(shell echo "scale=5;1./$(R_MAX)" | bc)
-#I_THETA_MAX = $(shell echo "scale=5;57.29578/$(THETA_MAX)" | bc)
-#I_RL_MAX = $(shell echo "scale=5;1./$(RL_MAX)" | bc)
-#I_RT_MAX = $(shell echo "scale=5;1./$(RT_MAX)" | bc)
-#I_R3D_MAX = $(shell echo "scale=5;1./$(R3D_MAX)" | bc)
-#I_DZ_MAX = $(shell echo "scale=5;1./$(DZ_MAX)" | bc)
-#I_RED_INTERVAL = $(shell echo "scale=5;1./($(RED_F) - $(RED_0))" | bc)
-#LOG_R_MAX = $(shell echo "scale=9;l($(R_MAX))/l(10)" | bc -l)
-#LOG_TH_MAX = $(shell echo "scale=9;l($(THETA_MAX))/l(10)-1.75812263" | bc -l)
-#LOG_R3D_MAX = $(shell echo "scale=9;l($(R3D_MAX))/l(10)" | bc -l)
-
 # DEFINES for the OpenMP version
 DEFINEFLAGSCPU = $(DEFINEOPTIONS)
-#DEFINEFLAGSCPU += -DNB_R=$(NB_R) -DI_R_MAX=$(I_R_MAX) -DLOG_R_MAX=$(LOG_R_MAX)
-#DEFINEFLAGSCPU += -DNB_THETA=$(NB_THETA) -DI_THETA_MAX=$(I_THETA_MAX) -DLOG_TH_MAX=$(LOG_TH_MAX)
-#DEFINEFLAGSCPU += -DNB_RL=$(NB_RL) -DNB_RT=$(NB_RT) -DI_RL_MAX=$(I_RL_MAX) -DI_RT_MAX=$(I_RT_MAX)
-#DEFINEFLAGSCPU += -DNB_R3D=$(NB_R3D) -DNB_CTH=$(NB_CTH) -DI_R3D_MAX=$(I_R3D_MAX) -DLOG_R3D_MAX=$(LOG_R3D_MAX)
-#DEFINEFLAGSCPU += -DNB_DZ=$(NB_DZ) -DI_DZ_MAX=$(I_DZ_MAX)
-#DEFINEFLAGSCPU += -DI_RED_INTERVAL=$(I_RED_INTERVAL) -DRED_0=$(RED_0) -DNB_RED=$(NB_RED)
 DEFINEFLAGSCPU += -D_HISTO_2D_$(NB_H2D)
-#DEFINEFLAGSGPU += -DN_LOGINT=$(N_LOGINT)
 #DEFINES for the CUDA version
 DEFINEFLAGSGPU = $(DEFINEOPTIONS)
-#DEFINEFLAGSGPU += -DI_R_MAX=$(I_R_MAX) -DLOG_R_MAX=$(LOG_R_MAX)
-#DEFINEFLAGSGPU += -DI_THETA_MAX=$(I_THETA_MAX) -DLOG_TH_MAX=$(LOG_TH_MAX)
-#DEFINEFLAGSGPU += -DI_RL_MAX=$(I_RL_MAX) -DI_RT_MAX=$(I_RT_MAX)
-#DEFINEFLAGSGPU += -DI_R3D_MAX=$(I_R3D_MAX) -DLOG_R3D_MAX=$(LOG_R3D_MAX)
 DEFINEFLAGSGPU += -D_HISTO_2D_$(NB_H2D)
-#DEFINEFLAGSGPU += -DN_LOGINT=$(N_LOGINT)
 
 # COMPILER AND OPTIONS
+ifeq ($(strip $(USE_MPI)),yes)
+DEFINEFLAGSCPU += -D_HAVE_MPI
+COMPCPU = mpicc
+else
 COMPCPU = gcc
+endif
 COMPGPU = nvcc
 OPTCPU = -Wall -O3 -fopenmp $(DEFINEFLAGSCPU)
 OPTCPU_GPU = -Wall -O3 $(DEFINEFLAGSGPU)

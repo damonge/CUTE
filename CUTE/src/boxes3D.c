@@ -182,9 +182,9 @@ void init_3D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
   double dy=l_box[1]/n_side[1];
   double dz=l_box[2]/n_side[2];
 
-  printf("  There will be (%d,%d,%d) = %d boxes in total\n",
+  print_info("  There will be (%d,%d,%d) = %d boxes in total\n",
 	 n_side[0],n_side[1],n_side[2],n_boxes3D);
-  printf("  Boxes will be (dx,dy,dz) = (%.3lf,%.3lf,%.3lf) \n",
+  print_info("  Boxes will be (dx,dy,dz) = (%.3lf,%.3lf,%.3lf) \n",
 	 dx,dy,dz);
 }
 
@@ -207,7 +207,7 @@ Box3D *mk_Boxes3D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
   }
 
   *n_box_full=nfull;
-  printf("  There are objects in %d out of %d boxes \n",nfull,n_boxes3D);
+  print_info("  There are objects in %d out of %d boxes \n",nfull,n_boxes3D);
   *box_indices=(int *)my_malloc(nfull*sizeof(int));
   
   nfull=0;

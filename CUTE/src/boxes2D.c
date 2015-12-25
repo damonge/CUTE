@@ -266,8 +266,8 @@ void init_2D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
   n_boxes2D=n_side_phi*n_side_cth;
 
   double pixel_resolution=sqrt(4*M_PI/(n_side_phi*n_side_cth))/DTORAD;
-  printf("  There will be %d = pixels in total\n",n_boxes2D);
-  printf("  Pixel angular resolution is %.4lf deg \n",pixel_resolution);
+  print_info("  There will be %d = pixels in total\n",n_boxes2D);
+  print_info("  Pixel angular resolution is %.4lf deg \n",pixel_resolution);
 }
 
 static void get_pix_bounds(double alpha,int ipix,
@@ -377,7 +377,7 @@ Cell2D *mk_Cells2D_from_Catalog(Catalog cat,int **cell_indices,int *n_cell_full)
   }
   
   *n_cell_full=nfull;
-  printf("  There are objects in %d out of %d pixels\n",nfull,n_boxes2D);
+  print_info("  There are objects in %d out of %d pixels\n",nfull,n_boxes2D);
   *cell_indices=(int *)my_malloc(nfull*sizeof(int));
 
   nfull=0;
@@ -455,7 +455,7 @@ Cell2D *mk_Cells2D_many_from_Catalog(Catalog cat,int **cell_indices,
   }
   
   *n_cell_full=nfull;
-  printf("  There are objects in %d out of %d pixels\n",nfull,n_boxes2D);
+  print_info("  There are objects in %d out of %d pixels\n",nfull,n_boxes2D);
   *cell_indices=(int *)my_malloc(nfull*sizeof(int));
 
   nfull=0;
@@ -523,7 +523,7 @@ Box2D *mk_Boxes2D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
   }
 
   *n_box_full=nfull;
-  printf("  There are objects in %d out of %d pixels \n",nfull,n_boxes2D);
+  print_info("  There are objects in %d out of %d pixels \n",nfull,n_boxes2D);
   *box_indices=(int *)my_malloc(nfull*sizeof(int));
   
   nfull=0;
@@ -584,7 +584,7 @@ RadialCell *mk_RadialCells_from_Catalog(Catalog cat)
     radcell[ipix].np++;
   }
 
-  printf("  There are objects in %d out of %d pixels \n",nfull,n_boxes2D);
+  print_info("  There are objects in %d out of %d pixels \n",nfull,n_boxes2D);
   
   nfull=0;
   double aperture=1./i_theta_max;
@@ -654,7 +654,7 @@ RadialPixel *mk_RadialPixels_from_Catalog(Catalog cat,int **pixrad_indices,
   }
 
   *n_pixrad_full=nfull;
-  printf("  There are objects in %d out of %d pixels \n",nfull,n_boxes2D);
+  print_info("  There are objects in %d out of %d pixels \n",nfull,n_boxes2D);
   *pixrad_indices=(int *)my_malloc(nfull*sizeof(int));
   
   nfull=0;
