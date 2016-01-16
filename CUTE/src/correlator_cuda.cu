@@ -606,7 +606,7 @@ void corr_CUDA_AngPM(float cth_min,float cth_max,
   cudaMalloc((void**)&RR_dev,NB_HISTO_1D*sizeof(unsigned long long));
   cudaMemcpy(RR_dev,RR,NB_HISTO_1D*sizeof(unsigned long long),cudaMemcpyHostToDevice);
 
-  print_info("  Correlating \n");
+  printf("  Correlating \n");
   cudaEventRecord(start,0); //Time 0
   cudaCrossAngPM<<<n_blocks,NB_HISTO_1D>>>(npix,pix_full_dev,
 					   pos_dev,npD_dev,npR_dev,
@@ -614,7 +614,7 @@ void corr_CUDA_AngPM(float cth_min,float cth_max,
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&elaptime,start,stop);
-  print_info("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
+  printf("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
 
   //Copy histogram back to host
   cudaMemcpy(DD,DD_dev,NB_HISTO_1D*sizeof(unsigned long long),cudaMemcpyDeviceToHost);
@@ -702,7 +702,7 @@ void corr_CUDA_Ang(float cth_min,float cth_max,
   cudaMalloc((void**)&RR_dev,NB_HISTO_1D*sizeof(unsigned long long));
   cudaMemcpy(RR_dev,RR,NB_HISTO_1D*sizeof(unsigned long long),cudaMemcpyHostToDevice);
 
-  print_info("  Auto-correlating data \n");
+  printf("  Auto-correlating data \n");
   cudaEventRecord(start,0); //Time 0
   cudaCrossAng<<<n_blocks,NB_HISTO_1D>>>(npD,box_posD_dev,
 					 box_npD_dev,box_indD_dev,box_posD_dev,
@@ -710,9 +710,9 @@ void corr_CUDA_Ang(float cth_min,float cth_max,
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&elaptime,start,stop);
-  print_info("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
+  printf("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
 
-  print_info("  Auto-correlating random \n");
+  printf("  Auto-correlating random \n");
   cudaEventRecord(start,0); //Time 0
   cudaCrossAng<<<n_blocks,NB_HISTO_1D>>>(npR,box_posR_dev,
 					 box_npR_dev,box_indR_dev,box_posR_dev,
@@ -720,9 +720,9 @@ void corr_CUDA_Ang(float cth_min,float cth_max,
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&elaptime,start,stop);
-  print_info("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
+  printf("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
 
-  print_info("  Cross-correlating \n");
+  printf("  Cross-correlating \n");
   cudaEventRecord(start,0); //Time 0
   cudaCrossAng<<<n_blocks,NB_HISTO_1D>>>(npD,box_posD_dev,
 					 box_npR_dev,box_indR_dev,box_posR_dev,
@@ -730,7 +730,7 @@ void corr_CUDA_Ang(float cth_min,float cth_max,
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&elaptime,start,stop);
-  print_info("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
+  printf("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
 
   //Copy histogram back to host
   cudaMemcpy(DD,DD_dev,NB_HISTO_1D*sizeof(unsigned long long),cudaMemcpyDeviceToHost);
@@ -858,7 +858,7 @@ void corr_CUDA_3D(float *pos_min,
 
   //HERE
   int jj;
-  print_info("  Auto-correlating data \n");
+  printf("  Auto-correlating data \n");
   cudaEventRecord(start,0); //Time 0
   if(ctype==2) {
     cudaCrossMono<<<n_blocks,NB_HISTO_1D>>>(npD,box_posD_dev,
@@ -883,9 +883,9 @@ void corr_CUDA_3D(float *pos_min,
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&elaptime,start,stop);
-  print_info("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
+  printf("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
 
-  print_info("  Auto-correlating random \n");
+  printf("  Auto-correlating random \n");
   cudaEventRecord(start,0); //Time 0
   if(ctype==2) {
     cudaCrossMono<<<n_blocks,NB_HISTO_1D>>>(npR,box_posR_dev,
@@ -910,9 +910,9 @@ void corr_CUDA_3D(float *pos_min,
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&elaptime,start,stop);
-  print_info("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
+  printf("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
 
-  print_info("  Cross-correlating \n");
+  printf("  Cross-correlating \n");
   cudaEventRecord(start,0); //Time 0
   if(ctype==2) {
     cudaCrossMono<<<n_blocks,NB_HISTO_1D>>>(npD,box_posD_dev,
@@ -937,7 +937,7 @@ void corr_CUDA_3D(float *pos_min,
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&elaptime,start,stop);
-  print_info("  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
+  printf(  "  CUDA: Time ellapsed: %3.1f ms\n",elaptime); //Time 1
 
   //Copy histogram back to host
   cudaMemcpy(DD,DD_dev,nbns*sizeof(unsigned long long),cudaMemcpyDeviceToHost);

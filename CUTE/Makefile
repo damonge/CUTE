@@ -1,18 +1,31 @@
 ####################################################
 ###          User definable stuff
 #Behavior options
-#Use MPI parallelization? Set to "yes" or "no"
-USE_MPI = yes
-DEFINEOPTIONS = -D_VERBOSE
-DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
-#DEFINEOPTIONS += -D_LOGBIN #Only relevant for CU_CUTE
-#DEFINEOPTIONS += -D_DEBUG
-#DEFINEOPTIONS += -D_TRUE_ACOS
-DEFINEOPTIONS += -D_WITH_WEIGHTS
+USE_MPI = yes #Use MPI parallelization? Set to "yes" or "no"
+DEFINEOPTIONS = -D_VERBOSE #Comment out for more explicit output
+#DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
+#DEFINEOPTIONS += -D_DEBUG #Only used for debugging
+#DEFINEOPTIONS += -D_TRUE_ACOS #Comment this out if you don't want to use an approximate arccosine
+DEFINEOPTIONS += -D_WITH_WEIGHTS #Comment this out if you want weighed galaxies
 #GSL options
-GSL_INC = /home/damonge/include
-GSL_LIB = /home/damonge/lib
+GSL_INC = /home/dmonge/include
+GSL_LIB = /home/dmonge/lib
+
 #CUDA options
+#Monopole - maximum radius in Mpc/h
+R_MAX = 150.
+#Angular CF - maximum radius in deg
+THETA_MAX = 10.
+#3D CF (binning in sigma-pi) - maximum radial and transverse distances in Mpc/h
+RL_MAX = 150.
+RT_MAX = 150.
+#3D CF (binning in r-mu) - maximum radius in Mpc/h
+R3D_MAX = 150.
+#Logarithmic binning - comment out if you want linear binning
+DEFINEOPTIONS += -D_LOGBIN
+#Number of bins per decade
+N_LOGINT = 10
+#Number of bins per dimension for 2D histograms
 NB_H2D = 64
 OPT_PRECISION = -ftz=true -prec-div=false -prec-sqrt=false
 CUDADIR = /usr/local/cuda
@@ -25,8 +38,20 @@ LGSL = -L$(GSL_LIB) -lgsl -lgslcblas
 DEFINEFLAGSCPU = $(DEFINEOPTIONS)
 DEFINEFLAGSCPU += -D_HISTO_2D_$(NB_H2D)
 #DEFINES for the CUDA version
+I_R_MAX = $(shell echo "scale=5;1./$(R_MAX)" | bc)
+I_THETA_MAX = $(shell echo "scale=5;57.29578/$(THETA_MAX)" | bc)
+I_RL_MAX = $(shell echo "scale=5;1./$(RL_MAX)" | bc)
+I_RT_MAX = $(shell echo "scale=5;1./$(RT_MAX)" | bc)
+I_R3D_MAX = $(shell echo "scale=5;1./$(R3D_MAX)" | bc)
+LOG_R_MAX = $(shell echo "scale=9;l($(R_MAX))/l(10)" | bc -l)
+LOG_TH_MAX = $(shell echo "scale=9;l($(THETA_MAX))/l(10)-1.75812263" | bc -l)
+LOG_R3D_MAX = $(shell echo "scale=9;l($(R3D_MAX))/l(10)" | bc -l)
 DEFINEFLAGSGPU = $(DEFINEOPTIONS)
-DEFINEFLAGSGPU += -D_HISTO_2D_$(NB_H2D)
+DEFINEFLAGSGPU += -DI_R_MAX=$(I_R_MAX) -DLOG_R_MAX=$(LOG_R_MAX)
+DEFINEFLAGSGPU += -DI_THETA_MAX=$(I_THETA_MAX) -DLOG_TH_MAX=$(LOG_TH_MAX)
+DEFINEFLAGSGPU += -DI_RL_MAX=$(I_RL_MAX) -DI_RT_MAX=$(I_RT_MAX)
+DEFINEFLAGSGPU += -DI_R3D_MAX=$(I_R3D_MAX) -DLOG_R3D_MAX=$(LOG_R3D_MAX)
+DEFINEFLAGSGPU += -D_HISTO_2D_$(NB_H2D) -DN_LOGINT=$(N_LOGINT)
 
 # COMPILER AND OPTIONS
 ifeq ($(strip $(USE_MPI)),yes)

@@ -227,10 +227,12 @@ compile-time options defined at the beginning of the Makefile. These are:
 			node.
    * -D_HAVE_OMP     -> remove this flag if you don't have the OpenMP headers
                         installed.
-   * -D_LOGBIN       -> logarithmic binning will be used. Only relevant
-                        for angular, monopole and 3D (in r-mu) 2PCFs. Note
-		        that performance will be poorer when using
-		        logarithmic binning.
+   * -D_LOGBIN       -> logarithmic binning will be used. Only relevant for CU_CUTE,
+                        for angular, monopole and 3D (in r-mu) 2PCFs. The
+                        resolution is set by the Makefile variable N_LOGINT,
+ 			which determines the number of bins per decade. Note
+		        that performance will be poorer when using logarithmic
+   			binning.
 
    >The Gnu Scientific Library (GSL) must be installed in order to be able
     to compile CUTE. Set the Makefile variables GSL_INC and GSL_LIB to the
@@ -431,6 +433,10 @@ OpenMP version both in compilation and usage. We enumerate them here:
   compile-time option NB_H2D. If so desired, these values can be changed
   by modifying the header file define.h in the folder ./src/. This may
   however affect performance or even prevent the code from working.
+- The maximum scale (either angular or radial) for the 2PCF, which is
+  set through the parameters dim*_max for CUTE, must now be defined at
+  compile-time. For this, the use must edit the Makefile variables 
+  R_MAX, THETA_MAX, RL_MAX, RT_MAX and R3D_MAX accordingly.
 - The size of the object catalog must be large enough to fit inside the
   device's global memory.
 
@@ -483,4 +489,4 @@ preprint arXiv:1210.1833 when using it for published results.
 
 Regarding bugs, suggestions, questions or petitions, feel free to contact
 the author:
-    David Alonso: david dot alonso at uam dot es 
+    David Alonso: david dot alonso at astro dot ox dot ac dot uk

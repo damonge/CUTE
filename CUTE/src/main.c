@@ -28,9 +28,6 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#ifdef _HAVE_OMP
-#include <omp.h>
-#endif //_HAVE_OMP
 #include "define.h"
 #include "common.h"
 
