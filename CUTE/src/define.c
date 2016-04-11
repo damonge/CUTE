@@ -29,18 +29,15 @@
 ////////// Input parameters //////////
 ///
 //File names
-char fnameData[128]="default";   //Data catalog filename
-char fnameRandom[128]="default"; //Random catalog filename
-char fnameOut[128]="default";    //Output filename
-char fnameMask[128]="default";   //Mask filename
-char fnamedNdz[128]="default";   //z-distribution filename
+int use_two_catalogs=0;             //Are we doing cross-correlations?
+char fnameData1[128]="file_none";   //Data catalog filename
+char fnameData2[128]="file_none";   //Data catalog filename
+char fnameRandom1[128]="file_none"; //Random catalog filename
+char fnameRandom2[128]="file_none"; //Random catalog filename
+char fnameOut[128]="file_none";     //Output filename
 
 //Correlation
 int corr_type=-1; //Type of CF
-
-//Random catalogs
-int gen_ran=1;             //Do we generate randoms?
-int fact_n_rand=-1; //n_random_particles=fact_n_rand*n_data_particles
 
 //Pixels for radial correlation
 double aperture_los=0;
@@ -59,7 +56,7 @@ int use_pm=-1;
 ///
 //Binning variables
 int logbin=0;
-int n_logint=20;
+double n_logint=20;
 //z
 int nb_red=1;
 double i_red_interval=5.;

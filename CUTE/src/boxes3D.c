@@ -89,15 +89,16 @@ static Box3D *init_Boxes3D(int nbox)
   return boxes;
 }
 
-void init_3D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
+void init_3D_params(Catalog *cat_dat,Catalog *cat_ran,
+		    Catalog *cat_dat_2,Catalog *cat_ran_2,int ctype)
 {
   int ii;
 
-  for(ii=0;ii<cat_dat.np;ii++) {
-    double cth=cat_dat.cth[ii];
-    double phi=cat_dat.phi[ii];
+  for(ii=0;ii<cat_dat->np;ii++) {
+    double cth=cat_dat->cth[ii];
+    double phi=cat_dat->phi[ii];
     double sth=sqrt(1-cth*cth);
-    double rr=z2r(cat_dat.red[ii]);
+    double rr=z2r(cat_dat->red[ii]);
     double x=rr*sth*cos(phi);
     double y=rr*sth*sin(phi);
     double z=rr*cth;
@@ -118,16 +119,15 @@ void init_3D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
     if(z<z_min_bound) z_min_bound=z;
     if(z>z_max_bound) z_max_bound=z;
 
-    cat_dat.red[ii]=x;
-    cat_dat.cth[ii]=y;
-    cat_dat.phi[ii]=z;
+    cat_dat->red[ii]=x;
+    cat_dat->cth[ii]=y;
+    cat_dat->phi[ii]=z;
   }
-
-  for(ii=0;ii<cat_ran.np;ii++) {
-    double cth=cat_ran.cth[ii];
-    double phi=cat_ran.phi[ii];
+  for(ii=0;ii<cat_ran->np;ii++) {
+    double cth=cat_ran->cth[ii];
+    double phi=cat_ran->phi[ii];
     double sth=sqrt(1-cth*cth);
-    double rr=z2r(cat_ran.red[ii]);
+    double rr=z2r(cat_ran->red[ii]);
     double x=rr*sth*cos(phi);
     double y=rr*sth*sin(phi);
     double z=rr*cth;
@@ -139,9 +139,51 @@ void init_3D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
     if(z<z_min_bound) z_min_bound=z;
     if(z>z_max_bound) z_max_bound=z;
 
-    cat_ran.red[ii]=x;
-    cat_ran.cth[ii]=y;
-    cat_ran.phi[ii]=z;
+    cat_ran->red[ii]=x;
+    cat_ran->cth[ii]=y;
+    cat_ran->phi[ii]=z;
+  }
+  if(use_two_catalogs) {
+    for(ii=0;ii<cat_dat_2->np;ii++) {
+      double cth=cat_dat_2->cth[ii];
+      double phi=cat_dat_2->phi[ii];
+      double sth=sqrt(1-cth*cth);
+      double rr=z2r(cat_dat_2->red[ii]);
+      double x=rr*sth*cos(phi);
+      double y=rr*sth*sin(phi);
+      double z=rr*cth;
+      
+      if(x<x_min_bound) x_min_bound=x;
+      if(x>x_max_bound) x_max_bound=x;
+      if(y<y_min_bound) y_min_bound=y;
+      if(y>y_max_bound) y_max_bound=y;
+      if(z<z_min_bound) z_min_bound=z;
+      if(z>z_max_bound) z_max_bound=z;
+      
+      cat_dat_2->red[ii]=x;
+      cat_dat_2->cth[ii]=y;
+      cat_dat_2->phi[ii]=z;
+    }
+    for(ii=0;ii<cat_ran_2->np;ii++) {
+      double cth=cat_ran_2->cth[ii];
+      double phi=cat_ran_2->phi[ii];
+      double sth=sqrt(1-cth*cth);
+      double rr=z2r(cat_ran_2->red[ii]);
+      double x=rr*sth*cos(phi);
+      double y=rr*sth*sin(phi);
+      double z=rr*cth;
+      
+      if(x<x_min_bound) x_min_bound=x;
+      if(x>x_max_bound) x_max_bound=x;
+      if(y<y_min_bound) y_min_bound=y;
+      if(y>y_max_bound) y_max_bound=y;
+      if(z<z_min_bound) z_min_bound=z;
+      if(z>z_max_bound) z_max_bound=z;
+      
+      cat_ran_2->red[ii]=x;
+      cat_ran_2->cth[ii]=y;
+      cat_ran_2->phi[ii]=z;
+    }
   }
 
   double ex=FRACTION_EXTEND*(x_max_bound-x_min_bound);
@@ -171,7 +213,10 @@ void init_3D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
     fprintf(stderr,"WTF?? \n");
     exit(1);
   }
-  nside=optimal_nside(l_box_max,rmax,cat_dat.np);
+  int npmin=cat_dat->np;
+  if(cat_dat_2->np<npmin)
+    npmin=cat_dat_2->np;
+  nside=optimal_nside(l_box_max,rmax,npmin);
 
   n_side[0]=(int)(nside*l_box[0]/l_box_max)+1;
   n_side[1]=(int)(nside*l_box[1]/l_box_max)+1;
@@ -188,7 +233,7 @@ void init_3D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
 	 dx,dy,dz);
 }
 
-Box3D *mk_Boxes3D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
+Box3D *mk_Boxes3D_from_Catalog(Catalog *cat,int **box_indices,int *n_box_full)
 {
   int ii,nfull;
   Box3D *boxes;
@@ -196,10 +241,10 @@ Box3D *mk_Boxes3D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
   boxes=init_Boxes3D(n_boxes3D);
 
   nfull=0;
-  for(ii=0;ii<cat.np;ii++) {
-    double x=cat.red[ii];
-    double y=cat.cth[ii];
-    double z=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double x=cat->red[ii];
+    double y=cat->cth[ii];
+    double z=cat->phi[ii];
     int ibox=xyz2box(x,y,z);
     int np0=boxes[ibox].np;
     if(np0==0) nfull++;
@@ -222,17 +267,17 @@ Box3D *mk_Boxes3D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
     }
   }
 
-  for(ii=0;ii<cat.np;ii++) {
-    double x=cat.red[ii];
-    double y=cat.cth[ii];
-    double z=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double x=cat->red[ii];
+    double y=cat->cth[ii];
+    double z=cat->phi[ii];
     int ibox=xyz2box(x,y,z);
     int np0=boxes[ibox].np;
     boxes[ibox].pos[N_POS*np0]=x;
     boxes[ibox].pos[N_POS*np0+1]=y;
     boxes[ibox].pos[N_POS*np0+2]=z;
 #ifdef _WITH_WEIGHTS
-    boxes[ibox].pos[N_POS*np0+3]=cat.weight[ii];
+    boxes[ibox].pos[N_POS*np0+3]=cat->weight[ii];
 #endif //_WITH_WEIGHTS
     boxes[ibox].np++;
   }

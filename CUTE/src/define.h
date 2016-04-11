@@ -27,11 +27,12 @@
 #include <mpi.h>
 #endif //_HAVE_MPI
 
-extern char fnameData[128];
-extern char fnameRandom[128];
+extern int use_two_catalogs;
+extern char fnameData1[128];
+extern char fnameData2[128];
+extern char fnameRandom1[128];
+extern char fnameRandom2[128];
 extern char fnameOut[128];
-extern char fnameMask[128];
-extern char fnamedNdz[128];
 
 extern int corr_type;
 
@@ -43,11 +44,8 @@ extern double aperture_los;
 
 extern int use_pm;
 
-extern int fact_n_rand;
-extern int gen_ran;
-
 extern int logbin;
-extern int n_logint;
+extern double n_logint;
 extern int nb_red;
 extern double i_red_interval;
 extern double red_0;
@@ -176,14 +174,6 @@ typedef struct {
   int np;
   double *pos;
 } Box3D; //3D cell
-
-
-//Mask cube
-typedef struct {
-  double z0,zf;
-  double cth0,cthf;
-  double phi0,phif;
-} MaskRegion; //Mask region (cube in z,cos(theta),phi)
 
 
 //Catalog

@@ -206,16 +206,17 @@ void error_read_line(char *fname,int nlin)
   exit(1);
 }
 
-void free_Catalog(Catalog cat)
+void free_Catalog(Catalog *cat)
 {
-  if(cat.np>0) {
-    free(cat.red);
-    free(cat.cth);
-    free(cat.phi);
+  if(cat->np>0) {
+    free(cat->red);
+    free(cat->cth);
+    free(cat->phi);
 #ifdef _WITH_WEIGHTS
-    free(cat.weight);
+    free(cat->weight);
 #endif //_WITH_WEIGHTS
   }
+  free(cat);
 }
 
 void free_Catalog_f(Catalog_f cat)
@@ -326,7 +327,7 @@ void write_Boxes3D(int num_boxes,Box3D *boxes,char *fn)
   }
 }
 
-void write_Catalog(Catalog cat,char *fn)
+void write_Catalog(Catalog *cat,char *fn)
 {
   if(NodeThis==0) {
     //////
@@ -335,10 +336,10 @@ void write_Catalog(Catalog cat,char *fn)
     int ii;
     fr=fopen(fn,"w");
     if(fr==NULL) error_open_file(fn);
-    for(ii=0;ii<cat.np;ii++) {
-      fprintf(fr,"%lf %lf %lf ",cat.red[ii],cat.cth[ii],cat.phi[ii]);
+    for(ii=0;ii<cat->np;ii++) {
+      fprintf(fr,"%lf %lf %lf ",cat->red[ii],cat->cth[ii],cat->phi[ii]);
 #ifdef _WITH_WEIGHTS
-      fprintf(fr,"%lf\n",cat.weight[ii]);
+      fprintf(fr,"%lf\n",cat->weight[ii]);
 #else //_WITH_WEIGHTS
       fprintf(fr,"\n");
 #endif //_WITH_WEIGHTS

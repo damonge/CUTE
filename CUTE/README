@@ -17,8 +17,10 @@ root directory.
 2 Dependencies.
 
 Two things are necessary to compile and run CUTE: the gcc C compiler and the
-GSL libraries. Although CUTE is parallelized for shared memory machines with
-OpenMP, systems lacking this will be able to run in sequential mode anyway.
+GSL libraries. Although CUTE is parallelized for shared and distributed memory
+machines with OpenMP and MPI respectively, systems lacking these will be able
+to run in sequential mode anyway. If MPI paralelization is desired, an mpi
+C compiler (e.g. mpicc) is also necessary.
 
 Once the input files are provided and the compile-time options set,
 compilation should be straightforward by just typing
@@ -41,35 +43,23 @@ Several files are needed in any CUTE run:
     * data_filename= FILENAME
               See section 3.2 below.
     * random_filename= FILENAME
-              If set to "none" CUTE will generate its own random catalog
-	      from the parameters below, otherwise one random catalog will
-	      be read from FILENAME and used. All the subsequent parameters
-	      regarding the random catalog will be overriden. See section 3.3
-	      below.
+              CUTE has the option of generating its own random catalogs.
+	      Please provide the catalog yourself using the same format as
+	      for the data.
+    * data_filename_2= FILENAME
+              This, as well as random_filename_2 are only needed if
+	      cross-correlating two different datasets. Omit these parameters
+	      if you only want to compute the auto-correlation.
+    * random_filename_2= FILENAME
+              This, as well as data_filename_2 are only needed if
+	      cross-correlating two different datasets. Omit these parameters
+	      if you only want to compute the auto-correlation.
     * input_format= INT
               Format of the data and random catalogs (both should use the
 	      same format). Three formats (0, 1 and 2) are currently supported
 	      (see section 3.2 for details).
-    * num_lines= INT
-              This parameter determines the number of lines to be read from
-              the data and random catalogs. If absent or set to 'all', all
- 	      the lines in the files will be read.
     * output_filename= FILENAME
               See section 5 below.
-    * z_dist_filename= FILENAME
-      	      Only relevant if random_filename!="none". See section 3.5 below.
-    * mask_filename= FILENAME
-      	      Only relevant if random_filename!="none". See section 3.4 below.
-    * corr_estimator= STRING
-              Estimator to be used. Allowed values for STRING are:
-                      - PH  -> w=DD/RR-1         (Peebles & Hauser estimator)
-                      - DP  -> w=DD/DR-1         (Davis & Peebles estimator)
-                      - HAM -> w=DD*RR/DR^2-1    (Hamilton estimator)
-                      - HEW -> w=(DD-DR)/RR      (Hewett estimator)
-                      - LS  -> w=(DD-2*DR+RR)/RR (Landy & Szalay estimator)
-    * np_rand_fact= INT
-              If the data catalog has N_DAT objects, the random catalogs will
-              have np_rand_fact*N_DAT objects.
     * omega_M= DOUBLE
               Matter parameter (cosmological parameters are needed for the
               distance-redshift relation, which is only necessary for the
@@ -80,24 +70,21 @@ Several files are needed in any CUTE run:
               Dark energy equation of state.
     * corr_type= STRING
               Type of correlation function to be computed. Five options are
-	       available:
+              available:
  		      "radial"         -> Radial correlation function
  		      "angular"        -> Angular correlation function
                       "monopole"       -> Monopole
                       "3D_ps"          -> 3D correlation binning in sigma-pi
                       "3D_rm".         -> 3D correlation binning in r-mu
-                      "angular_cross". -> Angular cross-correlations of different
-                                          redshift bins
                       "full".          -> Angular correlation function as a
                                           function of redshift and radial separation
               See section 6 below for more information on the different types.
     * log_bin= INT
               Set to 1 to use logarithmic binning. Only relevant for the angular
-              2PCF, angular cross-correlations, monopole and 3D 2PCF (r-mu). 0
-	      otherwise.
-    * n_logint= INT
-              Number of bins in r or theta per decade when logaritmic binning is
-              activated.
+              2PCF, "full" correlation, monopole and 3D 2PCF (r-mu). 0 otherwise.
+    * dim1_min_logbin= FLOAT
+              Minimum scale to which the 2PCF will be computed. Only relevant if
+	      using logarithmic binning (log_bin= 1 above).
     * dim1_max= FLOAT
               Maximum scale to which the 2PCF will be computed in the first
 	      dimension. This corresponds to:
@@ -108,7 +95,7 @@ Several files are needed in any CUTE run:
               - The maximum redshift separation in the case of the radial
 	        correlation function.
 	      - The maximum radial separation (pi) in the case of the 3D correlation
-	        function (in pi-sigma)
+	        function (in pi-sigma).
     * dim1_nbin= INT
               Number of bins in the first dimension
     * dim2_max= FLOAT
@@ -174,34 +161,16 @@ Several files are needed in any CUTE run:
     read_line in src/io.c, in order to accommodate it to their needs.
 
 3.3 The random catalog:
-    By default CUTE generates the random catalogs, but users will often
-    want to use their own. For this reason the option random_filename is 
-    provided in the parameter file. If set to "none" CUTE will generate its
-    own random catalogs, otherwise it will read the random catalog from
-    the corresponding file. The expected file format is the same as for the
-    data catalog (above). If the random catalog is generated by CUTE, all
-    random points are given a weight of 1.
+    The random catalog(s) should be provided using the same format used for
+    the data. The option of generating its own random catalogs is no longer
+    supported by CUTE.
 
-3.4 The mask:
-    The format of the mask file should be a series of lines with 6 columns:
-                z0     zf     cth0     cthf     phi0   phif
-    Each line defines a cube in the space of redshift and spherical coords,
-    with  z0<z<zf, cth0<cos(theta)<cthf, phi0<phi<phif. The total mask is the
-    logical sum of all these cubes. Note that this file is only necessary to
-    generate random catalogs, and is therefore ignored if the random catalog
-    is read from a file (i.e. random_filename != none).
-
-3.5 The redshift distribution:
-    The objects in the random catalogs generated by CUTE need to follow the
-    same redshift distribution as those in the data, thus a file with this
-    redshift distribution is needed as input. This file must contain two
-    columns:  
-                      z              N(z)
-    IMPORTANT: CUTE assumes that the values of z are monotonously
-    increasing. The normalization of N(z) is irrelevant. Note that this file
-    is only necessary to generate random catalogs, and is therefore ignored
-    if the random catalog is read from a file (i.e. random_filename != none).
-
+3.4 Note on the 2PCF estimator:
+    CUTE now only supports the Landy & Szalay estimator, which in the case
+    of cross correlations reads:
+       w = (D1D2 - D1R2 - R1D2 - R1R2)/R1R2,
+    where A1B2 is the normalized histogram of pair number counts between
+    datasets A1 and B2, where A and B can be either data (D) or random (R).
 
 4 The compile-time options:
 
@@ -245,41 +214,36 @@ compile-time options defined at the beginning of the Makefile. These are:
 
 The output file contains 6 columns for the radial, angular and monopole
 correlation functions with
-              x   xi(x)   error(x)   DD(x)   DR(x)   RR(x) 
-where x is Dz, theta or r. The third column is the Poisson error calculated
-from DD, DR and RR.
+              x   xi(x)   D1D2(x)   D1R2(x)   R1D2(x)    R1R2(x) 
+where x is Dz, theta or r. Note that, in the case of auto-correlations
+D1D2=DD, D1R2=R1D2=DR, R1R2=RR.
 
 For the 3-D correlation functions the output file has 7 columns with
-   x1   x2   xi(x1,x2)   error(x1,x2)   DD(x1,x2)   DR(x1,x2)   RR(x1,x2)
+   x1   x2   xi(x1,x2)   D1D2(x1,x2)   D1R2(x1,x2)   R1D2(x1,x2)   R1R2(x1,x2)
 where (x1,x2) is either (pi,sigma) or (mu,r).
 
-For the "full" correlation function and the angular cross-correlations
-the output file has 4 columns with
-   x1  x2  x3  xi(x1,x2,x3)  error(x1,x2,x3)  DD(x1,x2,x3)  DR(x1,x2,x3)  RR(x1,x2,x3)
-where (x1,x2,x3) is either (z_mean,Dz,theta) or (z1,z2,theta) respectively.
-Here (z_mean,Dz) are the mean redshift and redshift separation, and
-(z1,z2) are the mean points of the two redshift bins.
+For the "full" correlation function the output file has 8 columns with
+   x1  x2  x3  xi(x1,x2,x3)  D1D2(x1,x2,x3)  D1R2(x1,x2,x3)  R1D2(x1,x2,x3)  R1R2(x1,x2,x3)
+where (x1,x2,x3) is (z_mean,Dz,theta). Here (z_mean,Dz) are the mean redshift and
+redshift separation.
 
-For the monopole and 3-D 2PCFs distances are given in units of Mpc/h.
-
-*** IMPORTANT *** Note that the error column only contains the Poisson
-contribution to the total error and is therefore an extremely incorrect
-estimator of the total error.
+For the monopole and 3-D 2PCFs distances are given in units of Mpc/h. Angles
+should be provided and are returned in degrees.
 
 
 6 The correlations.
 
 CUTE supports the calculation of 7 different types of 2-point correlation
 functions. In all cases the process is always very similar:
-  - Take a pair of objects in the data catalog.
+  - Take a pair of objects in the data catalog(s).
   - Calculate the distance between both objects.
   - Bin the pair in a histogram according to the calculated distance.
-  - Repeat for all pairs in the catalog to obtain the histogram DD.
-  - Do the same for a random catalog to obtain RR.
+  - Repeat for all pairs in the catalog to obtain the histogram D1D2.
+  - Do the same for a (pair of) random catalog(s) to obtain R1R2.
   - Do the same but with each pair composed of a data object and a random
-    object to obtain DR.
-  - Use DD, DR and RR to estimate the correlation function through the
-    estimator defined in the options file.
+    object to obtain D1R2 and R1D2.
+  - Use D1D2, D1R2, R1D2 and R1R2 to estimate the correlation function
+    through the Landy & Szalay estimator.
 Each type of correlation function has some subtleties regarding this
 calculation, which we detail below.
 
@@ -346,12 +310,6 @@ calculation, which we detail below.
    Pairs are binned in a two-dimensional histogram by these
    quantities.
 
- * Angular cross-correlations.
-   Galaxies are binned in redshift bins, the edges of which are determined
-   by the variables dim3_min, dim3_max and dim3_nbin in the parameter file.
-   Then each pair of galaxies is binned according to its angular separation
-   (theta) and to the redshift bins that each galaxy belongs to (z1,z2).
-
  * "Full" correlation function.
    Pairs of galaxies are binned according to their angular separation (theta),
    their radial separation (Dz) and mean redshift (z_mean:=(z1+z2)/2).
@@ -405,8 +363,10 @@ The current version of CUTE comes with a GPU version (CU_CUTE)
 written in CUDA-C. There exist several differences with respect to the
 OpenMP version both in compilation and usage. We enumerate them here:
 
-- The radial correlation function, angular cross-correlations and
-  "full" correlation function are not supported in CU_CUTE.
+- The radial correlation function and "full" correlation function are
+  not supported in CU_CUTE.
+- CU_CUTE only computes auto-correlations (i.e. it cannot cross-correlate
+  two datasets).
 - In order to use CU_CUTE we must (obviously) have a CUDA-enabled
   device in our system. The current implementation assumes compute 
   capability 2.0 or higher for this device (atomic operations must be
@@ -459,8 +419,6 @@ a set of files. These are:
                 of a Planck-like cosmology with 0.45<z<0.75, 0<RA<90,
 		and 0<DEC<90.
  - random.dat : a corresponding random catalog
- - mask.dat   : the mask file corresponding to the catalog
- - dndz.dat   : the redshift distribution for the mock catalog
  - param.ini  : an instance of the parameter file needed to run
                 CUTE on the test catalog
 This test suite is meant to clarify the expected format of the different

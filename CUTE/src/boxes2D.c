@@ -209,18 +209,30 @@ static RadialCell *init_RadialCells(int npix)
   return radcell;
 }
 
-void init_2D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
+void init_2D_params(Catalog *cat_dat,Catalog *cat_ran,
+		    Catalog *cat_dat_2,Catalog *cat_ran_2,
+		    int ctype)
 {
   int ii;
+  int npmax;
 
-  cth_min_bound=cat_dat.cth[0];
-  cth_max_bound=cat_dat.cth[0];
-  phi_min_bound=cat_dat.phi[0];
-  phi_max_bound=cat_dat.phi[0];
+  cth_min_bound=cat_dat->cth[0];
+  cth_max_bound=cat_dat->cth[0];
+  phi_min_bound=cat_dat->phi[0];
+  phi_max_bound=cat_dat->phi[0];
 
-  for(ii=0;ii<cat_dat.np;ii++) {
-    double cth=cat_dat.cth[ii];
-    double phi=cat_dat.phi[ii];
+  for(ii=0;ii<cat_dat->np;ii++) {
+    double cth=cat_dat->cth[ii];
+    double phi=cat_dat->phi[ii];
+
+    if(cth<cth_min_bound) cth_min_bound=cth;
+    if(phi<phi_min_bound) phi_min_bound=phi;
+    if(cth>cth_max_bound) cth_max_bound=cth;
+    if(phi>phi_max_bound) phi_max_bound=phi;
+  }
+  for(ii=0;ii<cat_ran->np;ii++) {
+    double cth=cat_ran->cth[ii];
+    double phi=cat_ran->phi[ii];
 
     if(cth<cth_min_bound) cth_min_bound=cth;
     if(phi<phi_min_bound) phi_min_bound=phi;
@@ -228,16 +240,30 @@ void init_2D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
     if(phi>phi_max_bound) phi_max_bound=phi;
   }
 
-  for(ii=0;ii<cat_ran.np;ii++) {
-    double cth=cat_ran.cth[ii];
-    double phi=cat_ran.phi[ii];
-
-    if(cth<cth_min_bound) cth_min_bound=cth;
-    if(phi<phi_min_bound) phi_min_bound=phi;
-    if(cth>cth_max_bound) cth_max_bound=cth;
-    if(phi>phi_max_bound) phi_max_bound=phi;
+  if(use_two_catalogs) {
+    for(ii=0;ii<cat_dat_2->np;ii++) {
+      double cth=cat_dat_2->cth[ii];
+      double phi=cat_dat_2->phi[ii];
+      
+      if(cth<cth_min_bound) cth_min_bound=cth;
+      if(phi<phi_min_bound) phi_min_bound=phi;
+      if(cth>cth_max_bound) cth_max_bound=cth;
+      if(phi>phi_max_bound) phi_max_bound=phi;
+    }
+    for(ii=0;ii<cat_ran_2->np;ii++) {
+      double cth=cat_ran_2->cth[ii];
+      double phi=cat_ran_2->phi[ii];
+      
+      if(cth<cth_min_bound) cth_min_bound=cth;
+      if(phi<phi_min_bound) phi_min_bound=phi;
+      if(cth>cth_max_bound) cth_max_bound=cth;
+      if(phi>phi_max_bound) phi_max_bound=phi;
+    }
   }
-
+  
+  npmax=cat_ran->np;
+  if(cat_ran_2->np>npmax)
+    npmax=cat_ran_2->np;
   if(ctype==0) {
     n_side_cth=estimate_optimal_nside_radial();
     n_side_phi=2*n_side_cth;
@@ -246,7 +272,7 @@ void init_2D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
     if(!use_pm) {
       double fsky=(cth_max_bound-cth_min_bound)*
 	(phi_max_bound-phi_min_bound)/(4*M_PI);
-      n_side_cth=estimate_optimal_nside_angular(cat_ran.np,fsky);
+      n_side_cth=estimate_optimal_nside_angular(npmax,fsky);
       n_side_phi=2*n_side_cth;
     }
   }
@@ -254,7 +280,7 @@ void init_2D_params(Catalog cat_dat,Catalog cat_ran,int ctype)
     if(!use_pm) {
       double fsky=(cth_max_bound-cth_min_bound)*
 	(phi_max_bound-phi_min_bound)/(4*M_PI);
-      n_side_cth=estimate_optimal_nside_angular(cat_ran.np,fsky);
+      n_side_cth=estimate_optimal_nside_angular(npmax,fsky);
       n_side_phi=2*n_side_cth;
     }
   }
@@ -351,7 +377,7 @@ static void get_pix_bounds(double alpha,int ipix,
   if(*icth_min<0) *icth_min=0;
 }
 
-Cell2D *mk_Cells2D_from_Catalog(Catalog cat,int **cell_indices,int *n_cell_full)
+Cell2D *mk_Cells2D_from_Catalog(Catalog *cat,int **cell_indices,int *n_cell_full)
 {
   int ii,nfull;
   Cell2D *cells;
@@ -359,9 +385,9 @@ Cell2D *mk_Cells2D_from_Catalog(Catalog cat,int **cell_indices,int *n_cell_full)
   cells=init_Cells2D(n_boxes2D);
   
   nfull=0;
-  for(ii=0;ii<cat.np;ii++) {
-    double cth=cat.cth[ii];
-    double phi=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double cth=cat->cth[ii];
+    double phi=cat->phi[ii];
     int ipix=sph2pix(cth,phi);
     np_t np0=cells[ipix].np;
     if(np0<0) {
@@ -370,7 +396,7 @@ Cell2D *mk_Cells2D_from_Catalog(Catalog cat,int **cell_indices,int *n_cell_full)
     }
 
 #ifdef _WITH_WEIGHTS
-    cells[ipix].np+=cat.weight[ii];
+    cells[ipix].np+=cat->weight[ii];
 #else //_WITH_WEIGHTS
     cells[ipix].np++;
 #endif //_WITH_WEIGHTS
@@ -419,7 +445,7 @@ Cell2D *mk_Cells2D_from_Catalog(Catalog cat,int **cell_indices,int *n_cell_full)
   return cells;
 }
 
-Cell2D *mk_Cells2D_many_from_Catalog(Catalog cat,int **cell_indices,
+Cell2D *mk_Cells2D_many_from_Catalog(Catalog *cat,int **cell_indices,
 				     Cell2D **cells_total_out,int *n_cell_full)
 {
   int ii,iz,nfull;
@@ -430,12 +456,12 @@ Cell2D *mk_Cells2D_many_from_Catalog(Catalog cat,int **cell_indices,
   cells_total=init_Cells2D(n_boxes2D);
   
   nfull=0;
-  for(ii=0;ii<cat.np;ii++) {
-    double zz=cat.red[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double zz=cat->red[ii];
     iz=(int)((zz-red_0)*i_red_interval*nb_red);
     if((iz>=0)&&(iz<nb_red)) {
-      double cth=cat.cth[ii];
-      double phi=cat.phi[ii];
+      double cth=cat->cth[ii];
+      double phi=cat->phi[ii];
       int ipix=sph2pix(cth,phi);
       if(cells[iz+nb_red*ipix].np<0)
 	cells[iz+nb_red*ipix].np=0;
@@ -445,8 +471,8 @@ Cell2D *mk_Cells2D_many_from_Catalog(Catalog cat,int **cell_indices,
       }
 
 #ifdef _WITH_WEIGHTS
-      cells[iz+nb_red*ipix].np+=cat.weight[ii];
-      cells_total[ipix].np+=cat.weight[ii];
+      cells[iz+nb_red*ipix].np+=cat->weight[ii];
+      cells_total[ipix].np+=cat->weight[ii];
 #else //_WITH_WEIGHTS
       cells[iz+nb_red*ipix].np++;
       cells_total[ipix].np++;
@@ -505,7 +531,7 @@ Cell2D *mk_Cells2D_many_from_Catalog(Catalog cat,int **cell_indices,
   return cells;
 }
 
-Box2D *mk_Boxes2D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
+Box2D *mk_Boxes2D_from_Catalog(Catalog *cat,int **box_indices,int *n_box_full)
 {
   int ii,nfull;
   Box2D *boxes;
@@ -513,9 +539,9 @@ Box2D *mk_Boxes2D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
   boxes=init_Boxes2D(n_boxes2D);
 
   nfull=0;
-  for(ii=0;ii<cat.np;ii++) {
-    double cth=cat.cth[ii];
-    double phi=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double cth=cat->cth[ii];
+    double phi=cat->phi[ii];
     int ipix=sph2pix(cth,phi);
     int np0=boxes[ipix].np;
     if(np0==0) nfull++;
@@ -549,9 +575,9 @@ Box2D *mk_Boxes2D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
     }
   }
 
-  for(ii=0;ii<cat.np;ii++) {
-    double cth=cat.cth[ii];
-    double phi=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double cth=cat->cth[ii];
+    double phi=cat->phi[ii];
     double sth=sqrt(1-cth*cth);
     int ipix=sph2pix(cth,phi);
     int np0=boxes[ipix].np;
@@ -559,7 +585,7 @@ Box2D *mk_Boxes2D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
     (boxes[ipix].bi)->pos[N_POS*np0+1]=sth*sin(phi);
     (boxes[ipix].bi)->pos[N_POS*np0+2]=cth;
 #ifdef _WITH_WEIGHTS
-    (boxes[ipix].bi)->pos[N_POS*np0+3]=cat.weight[ii];
+    (boxes[ipix].bi)->pos[N_POS*np0+3]=cat->weight[ii];
 #endif //_WITH_WEIGHTS
     boxes[ipix].np++;
   }
@@ -567,7 +593,7 @@ Box2D *mk_Boxes2D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full)
   return boxes;
 }
 
-RadialCell *mk_RadialCells_from_Catalog(Catalog cat)
+RadialCell *mk_RadialCells_from_Catalog(Catalog *cat)
 {
   int ii,nfull;
   RadialCell *radcell;
@@ -575,9 +601,9 @@ RadialCell *mk_RadialCells_from_Catalog(Catalog cat)
   radcell=init_RadialCells(n_boxes2D);
 
   nfull=0;
-  for(ii=0;ii<cat.np;ii++) {
-    double cth=cat.cth[ii];
-    double phi=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double cth=cat->cth[ii];
+    double phi=cat->phi[ii];
     int ipix=sph2pix(cth,phi);
     int np0=radcell[ipix].np;
     if(np0==0) nfull++;
@@ -618,16 +644,16 @@ RadialCell *mk_RadialCells_from_Catalog(Catalog cat)
     }
   }
 
-  for(ii=0;ii<cat.np;ii++) {
-    double zz=cat.red[ii];
-    double cth=cat.cth[ii];
-    double phi=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double zz=cat->red[ii];
+    double cth=cat->cth[ii];
+    double phi=cat->phi[ii];
     int ipix=sph2pix(cth,phi);
     int np0=radcell[ipix].np;
 
     (radcell[ipix].ci)->redweight[N_RW*np0]=zz;
 #ifdef _WITH_WEIGHTS
-    (radcell[ipix].ci)->redweight[N_RW*np0+1]=cat.weight[ii];
+    (radcell[ipix].ci)->redweight[N_RW*np0+1]=cat->weight[ii];
 #endif //_WITH_WEIGHTS
     radcell[ipix].np++;
   }
@@ -635,7 +661,7 @@ RadialCell *mk_RadialCells_from_Catalog(Catalog cat)
   return radcell;
 }
 
-RadialPixel *mk_RadialPixels_from_Catalog(Catalog cat,int **pixrad_indices,
+RadialPixel *mk_RadialPixels_from_Catalog(Catalog *cat,int **pixrad_indices,
 					  int *n_pixrad_full,int ctype)
 {
   int ii,nfull;
@@ -644,9 +670,9 @@ RadialPixel *mk_RadialPixels_from_Catalog(Catalog cat,int **pixrad_indices,
   pixrad=init_RadialPixels(n_boxes2D);
 
   nfull=0;
-  for(ii=0;ii<cat.np;ii++) {
-    double cth=cat.cth[ii];
-    double phi=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double cth=cat->cth[ii];
+    double phi=cat->phi[ii];
     int ipix=sph2pix(cth,phi);
     int np0=pixrad[ipix].np;
     if(np0==0) nfull++;
@@ -687,10 +713,10 @@ RadialPixel *mk_RadialPixels_from_Catalog(Catalog cat,int **pixrad_indices,
     }
   }
 
-  for(ii=0;ii<cat.np;ii++) {
-    double zz=cat.red[ii];
-    double cth=cat.cth[ii];
-    double phi=cat.phi[ii];
+  for(ii=0;ii<cat->np;ii++) {
+    double zz=cat->red[ii];
+    double cth=cat->cth[ii];
+    double phi=cat->phi[ii];
     double sth=sqrt(1-cth*cth);
     int ipix=sph2pix(cth,phi);
     int np0=pixrad[ipix].np;
@@ -698,7 +724,7 @@ RadialPixel *mk_RadialPixels_from_Catalog(Catalog cat,int **pixrad_indices,
     (pixrad[ipix].pi)->pos[N_POS*np0+1]=sth*sin(phi);
     (pixrad[ipix].pi)->pos[N_POS*np0+2]=cth;
 #ifdef _WITH_WEIGHTS
-    (pixrad[ipix].pi)->pos[N_POS*np0+3]=cat.weight[ii];
+    (pixrad[ipix].pi)->pos[N_POS*np0+3]=cat->weight[ii];
 #endif //_WITH_WEIGHTS
     (pixrad[ipix].pi)->redshifts[np0]=zz;
     pixrad[ipix].np++;

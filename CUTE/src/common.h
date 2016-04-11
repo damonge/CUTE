@@ -45,7 +45,7 @@ void error_open_file(char *fname);
 
 void error_read_line(char *fname,int nlin);
 
-void free_Catalog(Catalog cat);
+void free_Catalog(Catalog *cat);
 
 void free_Catalog_f(Catalog_f cat);
 
@@ -59,20 +59,22 @@ void free_RadialPixels(int npix,RadialPixel *pixrad);
 
 void free_RadialCells(int npix,RadialCell *radcell);
 
-void init_2D_params(Catalog cat_dat,Catalog cat_ran,int ctype);
+void init_2D_params(Catalog *cat_dat,Catalog *cat_ran,
+		    Catalog *cat_dat_2,Catalog *cat_ran_2,
+		    int ctype);
 
-Cell2D *mk_Cells2D_from_Catalog(Catalog cat,int **cell_indices,
+Cell2D *mk_Cells2D_from_Catalog(Catalog *cat,int **cell_indices,
 				int *n_cell_full);
 
-Cell2D *mk_Cells2D_many_from_Catalog(Catalog cat,int **cell_indices,
+Cell2D *mk_Cells2D_many_from_Catalog(Catalog *cat,int **cell_indices,
 				     Cell2D **cells_total_out,int *n_cell_full);
 
-RadialCell *mk_RadialCells_from_Catalog(Catalog cat);
+RadialCell *mk_RadialCells_from_Catalog(Catalog *cat);
 
-Box2D *mk_Boxes2D_from_Catalog(Catalog cat,int **box_indices,
+Box2D *mk_Boxes2D_from_Catalog(Catalog *cat,int **box_indices,
 			       int *n_box_full);
 
-RadialPixel *mk_RadialPixels_from_Catalog(Catalog cat,int **pixrad_indices,
+RadialPixel *mk_RadialPixels_from_Catalog(Catalog *cat,int **pixrad_indices,
 					  int *n_pixrad_full,int ctype);
 
 void mk_Cells2D_from_Catalog_f(Catalog_f cat_dat,Catalog_f cat_ran,
@@ -89,9 +91,11 @@ void mk_Boxes2D_from_Catalog_f(Catalog_f cat,float **box_pos,
 //3D boxes
 void free_Boxes3D(int nbox,Box3D *boxes);
 
-void init_3D_params(Catalog cat_dat,Catalog cat_ran,int ctype);
+void init_3D_params(Catalog *cat_dat,Catalog *cat_ran,
+		    Catalog *cat_dat_2,Catalog *cat_ran_2,
+		    int ctype);
 
-Box3D *mk_Boxes3D_from_Catalog(Catalog cat,int **box_indices,int *n_box_full);
+Box3D *mk_Boxes3D_from_Catalog(Catalog *cat,int **box_indices,int *n_box_full);
 
 void init_3D_params_f(float pox_min[],Catalog_f cat_dat,Catalog_f cat_ran,int ctype);
 
@@ -107,21 +111,10 @@ double z2r(double zz);
 void set_r_z(void);
 
 
-//Mask and redshift distribution for randoms
-void read_red_dist(void);
-
-void read_mask(void);
-
-void end_mask(void);
-
-Catalog mk_random_cat(int np);
-
-Catalog_f mk_random_cat_f(int np);
-
-
 //I/O functions
-void write_CF(char *fname,histo_t *DD,histo_t *DR,histo_t *RR,
-	      np_t sum_wd,np_t sum_wd2,np_t sum_wr,np_t sum_wr2);
+void write_CF(char *fname,histo_t *D1D2,histo_t *D1R2,histo_t *R1D2,histo_t *R1R2,
+	      np_t sum_wd,np_t sum_wd2,np_t sum_wr,np_t sum_wr2,
+	      np_t sum_wd_2,np_t sum_wd2_2,np_t sum_wr_2,np_t sum_wr2_2);
 
 void write_CF_cuda(char *fname,unsigned long long *DD,
 		   unsigned long long *DR,unsigned long long *RR,
@@ -129,62 +122,45 @@ void write_CF_cuda(char *fname,unsigned long long *DD,
 
 void read_run_params(char *fname);
 
-Catalog read_catalog(char *fname,np_t *sum_w,np_t *sum_w2);
+Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2);
 
 Catalog_f read_catalog_f(char *fname,int *np);
 
 
 //Correlators
-void auto_angular_cross_bf(int npix_full,int *indices,
-			   RadialPixel *pixrad,histo_t *hh);
-void cross_angular_cross_bf(int npix_full,int *indices,
-			    RadialPixel *pixrad1,RadialPixel *pixrad2,
-			    histo_t *hh);
-void corr_angular_cross_pm(Cell2D *cellsD,Cell2D *cellsD_total,
-			   Cell2D *cellsR,Cell2D *cellsR_total,
-			   histo_t *DD,histo_t *DR,histo_t *RR);
-
-void auto_full_bf(int npix_full,int *indices,RadialPixel *pixrad,
-		 histo_t *hh);
+void auto_full_bf(int npix_full,int *indices,RadialPixel *pixrad,histo_t *hh);
 void cross_full_bf(int npix_full,int *indices,
-		   RadialPixel *pixrad1,RadialPixel *pixrad2,
-		   histo_t *hh);
+		   RadialPixel *pixrad1,RadialPixel *pixrad2,histo_t *hh);
 void corr_full_pm(RadialCell *cellsD,RadialCell *cellsR,
-		 histo_t *DD,histo_t *DR,
-		 histo_t *RR);
+		 histo_t *DD,histo_t *DR,histo_t *RR);
+void corr_full_twocat_pm(RadialCell *cellsD1,RadialCell *cellsD2,
+			 RadialCell *cellsR1,RadialCell *cellsR2,
+			 histo_t *D1D2,histo_t *D1R2,histo_t *R1D2,histo_t *R1R2);
 
-void auto_rad_bf(int npix_full,int *indices,RadialPixel *pixrad,
-		 histo_t *hh);
+void auto_rad_bf(int npix_full,int *indices,RadialPixel *pixrad,histo_t *hh);
 void cross_rad_bf(int npix_full,int *indices,
-		  RadialPixel *pixrad1,RadialPixel *pixrad2,
-		  histo_t *hh);
+		  RadialPixel *pixrad1,RadialPixel *pixrad2,histo_t *hh);
 
-void auto_ang_bf(int npix_full,int *indices,Box2D *boxes,
-		 histo_t *hh);
+void auto_ang_bf(int npix_full,int *indices,Box2D *boxes,histo_t *hh);
 void cross_ang_bf(int npix_full,int *indices,
-		  Box2D *boxes1,Box2D *boxes2,
-		  histo_t *hh);
+		  Box2D *boxes1,Box2D *boxes2,histo_t *hh);
 void corr_ang_pm(Cell2D *cellsD,Cell2D *cellsR,
-		 histo_t *DD,histo_t *DR,
-		 histo_t *RR);
+		 histo_t *DD,histo_t *DR,histo_t *RR);
+void corr_ang_twocat_pm(Cell2D *cellsD1,Cell2D *cellsD2,
+			Cell2D *cellsR1,Cell2D *cellsR2,
+			histo_t *D1D2,histo_t *D1R2,histo_t *R1D2,histo_t *R1R2);
 
-void auto_mono_bf(int nbox_full,int *indices,Box3D *boxes,
-		  histo_t *hh);
+void auto_mono_bf(int nbox_full,int *indices,Box3D *boxes,histo_t *hh);
 void cross_mono_bf(int nbox_full,int *indices,
-		   Box3D *boxes1,Box3D *boxes2,
-		   histo_t *hh);
+		   Box3D *boxes1,Box3D *boxes2,histo_t *hh);
 
-void auto_3d_ps_bf(int nbox_full,int *indices,Box3D *boxes,
-		   histo_t *hh);
+void auto_3d_ps_bf(int nbox_full,int *indices,Box3D *boxes,histo_t *hh);
 void cross_3d_ps_bf(int nbox_full,int *indices,
-		    Box3D *boxes1,Box3D *boxes2,
-		    histo_t *hh);
+		    Box3D *boxes1,Box3D *boxes2,histo_t *hh);
 
-void auto_3d_rm_bf(int nbox_full,int *indices,Box3D *boxes,
-		   histo_t *hh);
+void auto_3d_rm_bf(int nbox_full,int *indices,Box3D *boxes,histo_t *hh);
 void cross_3d_rm_bf(int nbox_full,int *indices,
-		    Box3D *boxes1,Box3D *boxes2,
-		    histo_t *hh);
+		    Box3D *boxes1,Box3D *boxes2,histo_t *hh);
 
 #ifdef _DEBUG
 //Debug files output
@@ -198,7 +174,7 @@ void write_PixRads(int num_pix,RadialPixel *pixrad,char *fn);
 
 void write_Boxes3D(int num_boxes,Box3D *boxes,char *fn);
 
-void write_Catalog(Catalog cat,char *fn);
+void write_Catalog(Catalog *cat,char *fn);
 
 void write_Catalog_f(Catalog_f cat,char *fn);
 #endif //_DEBUG

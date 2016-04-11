@@ -3,13 +3,13 @@
 #Behavior options
 USE_MPI = yes #Use MPI parallelization? Set to "yes" or "no"
 DEFINEOPTIONS = -D_VERBOSE #Comment out for more explicit output
-#DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
+DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
 #DEFINEOPTIONS += -D_DEBUG #Only used for debugging
 #DEFINEOPTIONS += -D_TRUE_ACOS #Comment this out if you don't want to use an approximate arccosine
 DEFINEOPTIONS += -D_WITH_WEIGHTS #Comment this out if you want weighed galaxies
 #GSL options
-GSL_INC = /home/dmonge/include
-GSL_LIB = /home/dmonge/lib
+GSL_INC = /home/damonge/include
+GSL_LIB = /home/damonge/lib
 
 #CUDA options
 #Monopole - maximum radius in Mpc/h
@@ -36,7 +36,6 @@ LGSL = -L$(GSL_LIB) -lgsl -lgslcblas
 
 # DEFINES for the OpenMP version
 DEFINEFLAGSCPU = $(DEFINEOPTIONS)
-DEFINEFLAGSCPU += -D_HISTO_2D_$(NB_H2D)
 #DEFINES for the CUDA version
 I_R_MAX = $(shell echo "scale=5;1./$(R_MAX)" | bc)
 I_THETA_MAX = $(shell echo "scale=5;57.29578/$(THETA_MAX)" | bc)
@@ -76,19 +75,18 @@ LIBGPU = $(LGSL) -L$(CUDADIR)/lib64 -lcudart -lpthread -lm
 DEF = src/define.o
 COM = src/common.o
 COSMO = src/cosmo.o
-RANDOM = src/random.o
 CORR = src/correlator.o
 BOX2D = src/boxes2D.o
 BOX3D = src/boxes3D.o
 IO = src/io.o
 MAIN = src/main.c
-OFILES = $(DEF) $(COM) $(COSMO) $(RANDOM) $(CORR) $(BOX2D) $(BOX3D) $(IO) $(MAIN)
+OFILES = $(DEF) $(COM) $(COSMO) $(CORR) $(BOX2D) $(BOX3D) $(IO) $(MAIN)
 
 #CU_CUTE
 BOXCUDA = src/boxesCUDA.o
 CORRCUDA = src/correlator_cuda.o
 MAINCUDA = src/main_cuda.o
-OFILESCUDA = $(DEF) $(COM) $(COSMO) $(MASK) $(CORRCUDA) $(BOXCUDA) $(RANDOM) $(IO) $(MAINCUDA)
+OFILESCUDA = $(DEF) $(COM) $(COSMO) $(CORRCUDA) $(BOXCUDA) $(IO) $(MAINCUDA)
 
 #FINAL GOAL
 EXE = CUTE
@@ -105,10 +103,8 @@ $(COSMO) : src/cosmo.c
 	$(COMPCPU) $(OPTCPU) -c $< -o $@ $(INCLUDECOM)
 $(CORR) : src/correlator.c
 	$(COMPCPU) $(OPTCPU) -c $< -o $@ $(INCLUDECOM)
-$(RANDOM) : src/random.c
-	$(COMPCPU) $(OPTCPU) -c $< -o $@ $(INCLUDECOM)
 $(IO) : src/io.c
-	$(COMPCPU) $(OPTCPU) -c $< -o $@ $(INCLUDECOM)
+	$(COMPCPU) $(OPTCPU_GPU) -c $< -o $@ $(INCLUDECOM)
 $(BOX2D) : src/boxes2D.c
 	$(COMPCPU) $(OPTCPU) -c $< -o $@ $(INCLUDECOM)
 $(BOX3D) : src/boxes3D.c
