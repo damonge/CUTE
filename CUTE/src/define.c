@@ -78,6 +78,7 @@ int nb_rt=128;
 int nb_mu=128;
 double i_rl_max=0.005;
 double i_rt_max=0.005;
+double log_rt_max=2.3103;
 
 //2D boxing variables
 int n_side_cth,n_side_phi,n_boxes2D;

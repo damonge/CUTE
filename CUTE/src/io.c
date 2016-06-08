@@ -260,7 +260,11 @@ void write_CF(char *fname,
     else if(corr_type==3) {
       for(ii=0;ii<nb_rt;ii++) {
 	int jj;
-	double rt=(ii+0.5)/(nb_rt*i_rt_max);
+	double rt;
+	if(logbin)
+	  rt=pow(10,((ii+0.5)-nb_rt)/n_logint+log_rt_max);
+	else
+	  rt=(ii+0.5)/(nb_rt*i_rt_max);
 	for(jj=0;jj<nb_rl;jj++) {
 	  double corr;
 	  double rl=(jj+0.5)/(nb_rl*i_rl_max);
@@ -570,10 +574,11 @@ void process_binner(Binner binner)
     log_r_max=log10(binner.dim1_max);
   }
   else if(corr_type==3) {
-    nb_rl=binner.dim1_nbin;
-    i_rl_max=1./binner.dim1_max;
-    nb_rt=binner.dim2_nbin;
-    i_rt_max=1./binner.dim2_max;
+    nb_rl=binner.dim2_nbin;
+    i_rl_max=1./binner.dim2_max;
+    nb_rt=binner.dim1_nbin;
+    i_rt_max=1./binner.dim1_max;
+    log_rt_max=log10(binner.dim1_max);
   }
   else if(corr_type==4) {
     nb_r=binner.dim1_nbin;

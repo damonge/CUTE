@@ -29,6 +29,23 @@
 #include "define.h"
 #include "common.h"
 
+static inline int rt2bin(double r2)
+{
+  int irt;
+
+  if(logbin) {
+    if(r2>0)
+      irt=(int)(n_logint*(0.5*log10(r2)-log_rt_max)+nb_rt);
+    else
+      irt=-1;
+  }
+  else {
+    irt=(int)(sqrt(r2)*i_rt_max*nb_rt);
+  }
+
+  return irt;
+}
+
 static inline int r2bin(double r2)
 {
   int ir;
@@ -1456,9 +1473,9 @@ void auto_3d_ps_bf(int nbox_full,int *indices,Box3D *boxes,
   for(i=0;i<nb_rl*nb_rt;i++) 
     hh[i]=0;
 
-#pragma omp parallel default(none)				\
-  shared(nbox_full,indices,boxes,hh,n_side,l_box)		\
-  shared(i_rt_max,nb_rt,i_rl_max,nb_rl,ibox_0,ibox_f)
+#pragma omp parallel default(none)					\
+  shared(nbox_full,indices,boxes,hh,n_side,l_box)			\
+  shared(log_rt_max,i_rt_max,nb_rt,i_rl_max,nb_rl,ibox_0,ibox_f)
   {
     int j;
     histo_t *hthread=(histo_t *)my_calloc(nb_rl*nb_rt,sizeof(histo_t));
@@ -1511,7 +1528,7 @@ void auto_3d_ps_bf(int nbox_full,int *indices,Box3D *boxes,
 	    if((irl<nb_rl)&&(irl>=0)) {
 	      double rt2=r2-rl*rl;
 	      if(rt2<rt2_max) {
-		int irt=(int)(sqrt(rt2)*i_rt_max*nb_rt);
+		int irt=rt2bin(rt2);
 		if((irt<nb_rt)&&(irt>=0)) {
 #ifdef _WITH_WEIGHTS
 		  hthread[irl+nb_rl*irt]+=pos1[3]*pos2[3];
@@ -1554,7 +1571,7 @@ void auto_3d_ps_bf(int nbox_full,int *indices,Box3D *boxes,
 		      if((irl<nb_rl)&&(irl>=0)) {
 			double rt2=r2-rl*rl;
 			if(rt2<rt2_max) {
-			  int irt=(int)(sqrt(rt2)*i_rt_max*nb_rt);
+			  int irt=rt2bin(rt2);
 			  if((irt<nb_rt)&&(irt>=0)) {
 #ifdef _WITH_WEIGHTS
 			    hthread[irl+nb_rl*irt]+=pos1[3]*pos2[3];
@@ -1596,9 +1613,9 @@ void cross_3d_ps_bf(int nbox_full,int *indices,
   for(i=0;i<nb_rl*nb_rt;i++) 
     hh[i]=0;
 
-#pragma omp parallel default(none)				\
-  shared(nbox_full,indices,boxes1,boxes2,hh,n_side,l_box)	\
-  shared(i_rt_max,nb_rt,i_rl_max,nb_rl,ibox_0,ibox_f)
+#pragma omp parallel default(none)					\
+  shared(nbox_full,indices,boxes1,boxes2,hh,n_side,l_box)		\
+  shared(log_rt_max,i_rt_max,nb_rt,i_rl_max,nb_rl,ibox_0,ibox_f)
   {
     int j;
     histo_t *hthread=(histo_t *)my_calloc(nb_rl*nb_rt,sizeof(histo_t));
@@ -1661,7 +1678,7 @@ void cross_3d_ps_bf(int nbox_full,int *indices,
 		    if((irl<nb_rl)&&(irl>=0)) {
 		      double rt2=r2-rl*rl;
 		      if(rt2<rt2_max) {
-			int irt=(int)(sqrt(rt2)*i_rt_max*nb_rt);
+			int irt=rt2bin(rt2);
 			if((irt<nb_rt)&&(irt>=0)) {
 #ifdef _WITH_WEIGHTS
 			  hthread[irl+nb_rl*irt]+=pos1[3]*pos2[3];

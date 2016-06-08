@@ -62,6 +62,7 @@ extern int nb_rt;
 extern int nb_mu;
 extern double i_rl_max;
 extern double i_rt_max;
+extern double log_rt_max;
 
 extern int n_side_cth;
 extern int n_side_phi;

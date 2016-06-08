@@ -763,8 +763,14 @@ void run_3d_ps_corr_bf(void)
   print_info(" - Range: (%.3lf,%.3lf) < (pi,sigma) < (%.3lf,%.3lf) Mpc/h\n",
 	 0.,0.,1/i_rl_max,1/i_rt_max);
   print_info(" - #bins: (%d,%d)\n",nb_rl,nb_rt);
-  print_info(" - Resolution: (d(pi),d(sigma)) = (%.3lf,%.3lf) Mpc/h\n",
-	 1./(i_rl_max*nb_rl),1./(i_rt_max*nb_rt));
+  if(logbin) {
+    print_info(" - Resolution: d(pi) = %.3lf Mpc/h\n",1./(i_rl_max*nb_rl));
+    print_info("   Log. binning in sigma with %d bins per decade\n",n_logint);
+  }
+  else {
+    print_info(" - Resolution: (d(pi),d(sigma)) = (%.3lf,%.3lf) Mpc/h\n",
+	       1./(i_rl_max*nb_rl),1./(i_rt_max*nb_rt));
+  }
   print_info(" - Using a brute-force approach \n");
   print_info("\n");
 #endif
