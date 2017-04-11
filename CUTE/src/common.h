@@ -112,6 +112,7 @@ void set_r_z(void);
 
 
 //I/O functions
+void write_CF_shear(char *fname,histo_t *D1D2,double *gtH,double *grH);
 void write_CF(char *fname,histo_t *D1D2,histo_t *D1R2,histo_t *R1D2,histo_t *R1R2,
 	      np_t sum_wd,np_t sum_wd2,np_t sum_wr,np_t sum_wr2,
 	      np_t sum_wd_2,np_t sum_wd2_2,np_t sum_wr_2,np_t sum_wr2_2);
@@ -122,7 +123,7 @@ void write_CF_cuda(char *fname,unsigned long long *DD,
 
 void read_run_params(char *fname);
 
-Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2);
+Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2,int read_shear);
 
 Catalog_f read_catalog_f(char *fname,int *np);
 
@@ -162,6 +163,9 @@ void auto_3d_rm_bf(int nbox_full,int *indices,Box3D *boxes,histo_t *hh);
 void cross_3d_rm_bf(int nbox_full,int *indices,
 		    Box3D *boxes1,Box3D *boxes2,histo_t *hh);
 
+void cross_ang_bf_shear(int npix_full,int *indices,
+			Box2D *boxes1,Box2D *boxes2,
+			histo_t *hh,double *gth,double *grh);
 #ifdef _DEBUG
 //Debug files output
 void write_Cells2D(int num_cells,Cell2D *cellmap,char *fn);

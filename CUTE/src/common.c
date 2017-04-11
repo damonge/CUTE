@@ -215,6 +215,10 @@ void free_Catalog(Catalog *cat)
 #ifdef _WITH_WEIGHTS
     free(cat->weight);
 #endif //_WITH_WEIGHTS
+    if(cat->has_shear) {
+      free(cat->gamma1);
+      free(cat->gamma2);
+    }
   }
   free(cat);
 }

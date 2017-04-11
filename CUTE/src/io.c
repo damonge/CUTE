@@ -33,7 +33,7 @@
 static int input_format=-1;
 
 static int read_line(FILE *fi,double *zz,double *cth,
-		     double *phi,double *weight)
+		     double *phi,double *weight,double *g1,double *g2,int read_shear)
 {
   //////
   // Reads source positions and weight in each line
@@ -44,12 +44,24 @@ static int read_line(FILE *fi,double *zz,double *cth,
 
 #ifdef _WITH_WEIGHTS
   double x3;
-  sr=sscanf(s0,"%lf %lf %lf %lf",&x0,&x1,&x2,&x3);
-  if(sr!=4) return 1;
+  if(read_shear) {
+    sr=sscanf(s0,"%lf %lf %lf %lf %lf %lf",&x0,&x1,&x2,&x3,g1,g2);
+    if(sr!=6) return 1;
+  }
+  else {
+    sr=sscanf(s0,"%lf %lf %lf %lf",&x0,&x1,&x2,&x3);
+    if(sr!=4) return 1;
+  }
   *weight=x3;
 #else //_WITH_WEIGHTS
-  sr=sscanf(s0,"%lf %lf %lf",&x0,&x1,&x2);
-  if(sr!=3) return 1;
+  if(read_shear) {
+    sr=sscanf(s0,"%lf %lf %lf %lf %lf",&x0,&x1,&x2,g1,g2);
+    if(sr!=5) return 1;
+  }
+  else {
+    sr=sscanf(s0,"%lf %lf %lf",&x0,&x1,&x2);
+    if(sr!=3) return 1;
+  }
   *weight=1;
 #endif //_WITH_WEIGHTS
   
@@ -142,6 +154,73 @@ static double make_CF(histo_t D1D2,histo_t D1R2,histo_t R1D2,histo_t R1R2,
     dr1r2=(double)(R1R2/norm_r1r2);
     
     return (dd1d2-dd1r2-dr1d2+dr1r2)/dr1r2;
+  }
+}
+
+void write_CF_shear(char *fname,histo_t *D1D2,double *gtH,double *grH)
+{
+  //////
+  // Writes correlation function to file fname
+#ifdef _HAVE_MPI
+  int n_bins_all=0;
+  n_bins_all=nb_theta;
+
+  if(NodeThis==0)
+    MPI_Reduce(MPI_IN_PLACE,D1D2,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+  else
+    MPI_Reduce(D1D2,NULL,n_bins_all,HISTO_T_MPI,MPI_SUM,0,MPI_COMM_WORLD);
+
+  if(NodeThis==0)
+    MPI_Reduce(MPI_IN_PLACE,gtH,n_bins_all,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+  else
+    MPI_Reduce(gtH,NULL,n_bins_all,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+
+  if(NodeThis==0)
+    MPI_Reduce(MPI_IN_PLACE,grH,n_bins_all,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+  else
+    MPI_Reduce(grH,NULL,n_bins_all,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+#endif //_HAVE_MPI
+
+  if(NodeThis==0) {
+    FILE *fo;
+    int ii;
+    
+    print_info("*** Writing output file ");
+#ifdef _VERBOSE
+    print_info("%s ",fname);
+#endif
+    print_info("\n");
+
+    fo=fopen(fname,"w");
+    if(fo==NULL) {
+      char oname[64]="output_CUTE.dat";
+      fprintf(stderr,"Error opening output file %s",fname);
+      fprintf(stderr," using ./output_CUTE.dat");
+      fo=fopen(oname,"w");
+      if(fo==NULL) error_open_file(oname);
+    }
+    
+    for(ii=0;ii<nb_theta;ii++) {
+      double th,corr_t=0,corr_r=0;
+      if(logbin)
+	th=pow(10,((ii+0.5)-nb_theta)/n_logint+log_th_max)/DTORAD;
+      else
+	th=(ii+0.5)/(nb_theta*i_theta_max*DTORAD);
+      if(D1D2[ii]>0) {
+	corr_t=gtH[ii]/D1D2[ii];
+	corr_r=grH[ii]/D1D2[ii];
+      }
+      fprintf(fo,"%lE %lE %lE",th,corr_t,corr_r);
+#ifdef _WITH_WEIGHTS
+      fprintf(fo,"%lE ",D1D2[ii]);
+#else //_WITH_WEIGHTS
+      fprintf(fo,"%llu ",D1D2[ii]);
+#endif //_WITH_WEIGHTS
+      fprintf(fo,"%lE %lE\n",gtH[ii],grH[ii]);
+    }
+    fclose(fo);
+    
+    printf("\n");
   }
 }
 
@@ -469,7 +548,7 @@ static void check_params(void)
     }
   }
 
-  if((corr_type!=0)&&(corr_type!=1)&&(corr_type!=5)) {
+  if((corr_type!=0)&&(corr_type!=1)&&(corr_type!=5)&&(corr_type!=6)) {
     if((omega_M<0)||(omega_L<0)||(weos<-5))
       fprintf(stderr,"CUTE: Wrong (or inexistent) cosmological parameters \n");
   }
@@ -500,7 +579,16 @@ static void check_params(void)
       }
     }
   }
-
+  if(corr_type==6) {
+#ifndef _WITH_WEIGHTS
+    fprintf(stderr,"CUTE: weights must be enabled when computing the shear_delta correlation function\n");
+    exit(1);
+#endif //_WITH_WEIGHTS
+    if(!use_two_catalogs) {
+      fprintf(stderr,"CUTE: two catalogs must be read to compute the shear_delta correlation function\n");
+      exit(1);
+    }
+  }
 }
 
 typedef struct {
@@ -596,6 +684,11 @@ void process_binner(Binner binner)
     i_red_interval=1./(binner.dim3_max-binner.dim3_min);
     red_0=binner.dim3_min;
   }
+  else  if(corr_type==6) {
+    nb_theta=binner.dim1_nbin;
+    i_theta_max=1./(DTORAD*binner.dim1_max);
+    log_th_max=log10(DTORAD*binner.dim1_max);
+  }
   else {
     fprintf(stderr,"WTF!?\n");
     exit(1);
@@ -654,10 +747,11 @@ void read_run_params(char *fname)
       else if(!strcmp(s2,"3D_ps")) corr_type=3;
       else if(!strcmp(s2,"3D_rm")) corr_type=4;
       else if(!strcmp(s2,"full")) corr_type=5;
+      else if(!strcmp(s2,"shear_delta")) corr_type=6;
       else {
 	fprintf(stderr,"CUTE: wrong corr type %s.",s2);
 	fprintf(stderr," Possible types are \"radial\", \"angular\", \"full\",");
-	fprintf(stderr," \"monopole\", \"3D_ps\" and \"3D_rm\".\n");
+	fprintf(stderr," \"monopole\", \"3D_ps\", \"3D_rm\" and \"shear_delta\".\n");
       }
     }
     else if(!strcmp(s1,"omega_M="))
@@ -707,7 +801,7 @@ void read_run_params(char *fname)
   print_info("\n");
 }
 
-Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
+Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2,int read_shear)
 {
   //////
   // Creates catalog from file fname
@@ -731,6 +825,7 @@ Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
   print_info("  %d lines in the catalog\n",ng);
 
   //Allocate catalog memory
+  cat->has_shear=read_shear;
   cat->np=ng;
   cat->red=(double *)my_malloc(cat->np*sizeof(double));
   cat->cth=(double *)my_malloc(cat->np*sizeof(double));
@@ -738,6 +833,10 @@ Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
 #ifdef _WITH_WEIGHTS
   cat->weight=(double *)my_malloc(cat->np*sizeof(double));
 #endif //_WITH_WEIGHTS
+  if(read_shear) {
+    cat->gamma1=(double *)my_malloc(cat->np*sizeof(double));
+    cat->gamma2=(double *)my_malloc(cat->np*sizeof(double));
+  }
 
   rewind(fd);
   //Read galaxies in mask
@@ -745,8 +844,8 @@ Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
   *sum_w=0;
   *sum_w2=0;
   for(ii=0;ii<ng;ii++) {
-    double zz,cth,phi,weight;
-    int st=read_line(fd,&zz,&cth,&phi,&weight);
+    double zz,cth,phi,weight,g1,g2;
+    int st=read_line(fd,&zz,&cth,&phi,&weight,&g1,&g2,read_shear);
 
     if(st) error_read_line(fname,ii+1);
     z_mean+=zz;
@@ -772,6 +871,10 @@ Catalog *read_catalog(char *fname,np_t *sum_w,np_t *sum_w2)
     (*sum_w)++;
     (*sum_w2)++;
 #endif //_WITH_WEIGHTS
+    if(read_shear) {
+      cat->gamma1[i_dat]=g1;
+      cat->gamma2[i_dat]=g2;
+    }
     i_dat++;
   }
   fclose(fd);
@@ -828,7 +931,7 @@ Catalog_f read_catalog_f(char *fname,int *np)
   int i_dat=0;
   for(ii=0;ii<ng;ii++) {
     double zz,cth,phi,rr,sth,dum_weight;
-    int st=read_line(fd,&zz,&cth,&phi,&dum_weight);
+    int st=read_line(fd,&zz,&cth,&phi,&dum_weight,&dum_weight,&dum_weight,0);
     if(st) error_read_line(fname,ii+1);
     z_mean+=zz;
     

@@ -52,11 +52,11 @@ void init_run(Catalog **cat_d,Catalog **cat_r,
   else
     *R1D2=*D1R2;
 
-  cat_dat=read_catalog(fnameData1,sum_wd,sum_wd2);
-  cat_ran=read_catalog(fnameRandom1,sum_wr,sum_wr2);
+  cat_dat=read_catalog(fnameData1,sum_wd,sum_wd2,0);
+  cat_ran=read_catalog(fnameRandom1,sum_wr,sum_wr2,0);
   if(use_two_catalogs) {
-    cat_dat_2=read_catalog(fnameData2,sum_wd_2,sum_wd2_2);
-    cat_ran_2=read_catalog(fnameRandom2,sum_wr_2,sum_wr2_2);
+    cat_dat_2=read_catalog(fnameData2,sum_wd_2,sum_wd2_2,0);
+    cat_ran_2=read_catalog(fnameRandom2,sum_wr_2,sum_wr2_2,0);
   }
   else {
     cat_dat_2=cat_dat; cat_ran_2=cat_ran;
@@ -622,6 +622,81 @@ void run_angular_corr_pm(void)
     free(R1D2);
 }
 
+
+void run_shear_delta_corr_bf(void)
+{
+  //////
+  // Runs w(theta) in brute-force mode
+  np_t sum_wd,sum_wd2,sum_ws,sum_ws2;
+  Catalog *cat_delta,*cat_shear;
+  histo_t *D1D2;
+  double *gtH,*grH;
+
+  Box2D *boxes_delta,*boxes_shear;
+  int *indices_delta,*indices_shear;
+  int nfull_delta,nfull_shear;
+
+  timer(4);
+
+#ifdef _VERBOSE
+  print_info("*** Shear-delta correlation function: \n");
+  print_info(" - Range: %.3lf < theta < %.3lf (deg)\n",
+	 0.,1/(i_theta_max*DTORAD));
+  print_info(" - #bins: %d\n",nb_theta);
+  if(logbin) {
+    print_info(" - Logarithmic binning with %.3lf bins per decade\n",
+	       n_logint);
+  }
+  else {
+  print_info(" - Resolution: D(theta) = %.3lf \n",
+	 1./(i_theta_max*nb_theta*DTORAD));
+  }
+  print_info(" - Using a brute-force approach \n");
+  print_info("\n");
+#endif
+
+  D1D2=my_calloc(nb_theta,sizeof(histo_t));
+  gtH=my_calloc(nb_theta,sizeof(double));
+  grH=my_calloc(nb_theta,sizeof(double));
+
+  cat_shear=read_catalog(fnameData1,&sum_ws,&sum_ws2,1);
+  cat_delta=read_catalog(fnameData2,&sum_wd,&sum_wd2,0);
+
+  print_info("*** Boxing catalogs \n");
+
+  init_2D_params(cat_delta,cat_shear,cat_delta,cat_shear,1);
+  boxes_delta=mk_Boxes2D_from_Catalog(cat_delta,&indices_delta,&nfull_delta);
+  free_Catalog(cat_delta);
+  boxes_shear=mk_Boxes2D_from_Catalog(cat_shear,&indices_shear,&nfull_shear);
+  free_Catalog(cat_shear);
+  print_info("\n");
+  
+  /*
+#ifdef _DEBUG
+  write_Boxes2D(n_boxes2D,boxes_dat,"debug_Box2DDat.dat");
+  write_Boxes2D(n_boxes2D,boxes_ran,"debug_Box2DRan.dat");
+  if(use_two_catalogs) {
+    write_Boxes2D(n_boxes2D,boxes_dat_2,"debug_Box2DDat2.dat");
+    write_Boxes2D(n_boxes2D,boxes_ran_2,"debug_Box2DRan2.dat");
+  }
+#endif //_DEBUG
+  */
+
+  print_info("*** Correlating \n");
+  timer(0);
+  cross_ang_bf_shear(nfull_shear,indices_shear,boxes_shear,boxes_delta,D1D2,gtH,grH);
+  timer(1);
+
+  print_info("\n");
+  write_CF_shear(fnameOut,D1D2,gtH,grH);
+
+  print_info("*** Cleaning up\n");
+  free_Boxes2D(n_boxes2D,boxes_delta);
+  free_Boxes2D(n_boxes2D,boxes_shear);
+  free(indices_delta); free(indices_shear);
+  free(D1D2); free(gtH); free(grH);
+}
+
 void run_monopole_corr_bf(void)
 {
   //////
@@ -1031,6 +1106,8 @@ int main(int argc,char **argv)
     else
       run_full_corr_bf();
   }
+  else if(corr_type==6)
+    run_shear_delta_corr_bf();
   else {
     fprintf(stderr,"CUTE: wrong correlation type.\n");
     exit(0);

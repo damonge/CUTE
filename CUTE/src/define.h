@@ -136,6 +136,8 @@ typedef struct {
 typedef struct {
   int bounds[4];
   double *pos;
+  int has_shear;
+  double *gamma;
 } Box2DInfo;
 
 typedef struct {
@@ -179,11 +181,14 @@ typedef struct {
 
 //Catalog
 typedef struct {
+  int has_shear;
   int np;
   double *red,*cth,*phi;
 #ifdef _WITH_WEIGHTS
   double *weight;
 #endif //_WITH_WEIGHTS
+  double *gamma1;
+  double *gamma2;
 } Catalog; //Catalog (double precision)
 
 typedef struct {

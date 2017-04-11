@@ -975,7 +975,7 @@ void cross_ang_bf(int npix_full,int *indices,
 		  histo_t *hh)
 {
   //////
-  // Angular auto-correlator
+  // Angular cross-correlator
   int i,ipix_0,ipix_f;
   share_iters(npix_full,&ipix_0,&ipix_f);
 
@@ -1950,5 +1950,97 @@ void cross_3d_rm_bf(int nbox_full,int *indices,
     }
 
     free(hthread);
+  } //end omp parallel
+}
+
+void cross_ang_bf_shear(int npix_full,int *indices,
+			Box2D *boxes1,Box2D *boxes2,
+			histo_t *hh,double *gth,double *grh)
+{
+  //////
+  // Angular shear-delta cross-correlator
+  int i,ipix_0,ipix_f;
+  share_iters(npix_full,&ipix_0,&ipix_f);
+
+  for(i=0;i<nb_theta;i++) {
+    hh[i]=0;
+    gth[i]=0;
+    grh[i]=0;
+  }
+
+#pragma omp parallel default(none)			\
+  shared(npix_full,indices,boxes1,boxes2,hh,gth,grh)	\
+  shared(n_side_phi,nb_theta,i_theta_max,ipix_0,ipix_f)
+  {
+    int j;
+    histo_t *hthread=(histo_t *)my_calloc(nb_theta,sizeof(histo_t));
+    double *gtthread=(double *)my_calloc(nb_theta,sizeof(double));
+    double *grthread=(double *)my_calloc(nb_theta,sizeof(double));
+    double cth_max=cos(1/i_theta_max);
+
+#pragma omp for nowait schedule(dynamic)
+    for(j=ipix_0;j<ipix_f;j++) {
+      int ii;
+      int ip1=indices[j];
+      int np1=boxes1[ip1].np;
+      Box2DInfo *bi1=boxes1[ip1].bi;
+      int *bounds=bi1->bounds;
+      for(ii=0;ii<np1;ii++) {
+	int icth;
+	double *pos1=&(bi1->pos[N_POS*ii]);
+	double *gamma=&(bi1->gamma[2*ii]);
+	for(icth=bounds[0];icth<=bounds[1];icth++) {
+	  int iphi;
+	  int icth_n=icth*n_side_phi;
+	  for(iphi=bounds[2];iphi<=bounds[3];iphi++) {
+	    int iphi_true=(iphi+n_side_phi)%n_side_phi;
+	    int ip2=iphi_true+icth_n;
+	    if(boxes2[ip2].np>0) {
+	      int jj;
+	      int np2=boxes2[ip2].np;
+	      Box2DInfo *bi2=boxes2[ip2].bi;
+	      for(jj=0;jj<np2;jj++) {
+		double *pos2=&(bi2->pos[N_POS*jj]);
+		double prod=pos1[0]*pos2[0]+
+		  pos1[1]*pos2[1]+pos1[2]*pos2[2];
+		if(prod>cth_max) {
+		  int ith=th2bin(prod);
+		  if((ith<nb_theta)&&(ith>=0)) {
+		    double g1,g2,gt,gr,ctho,cth2,cth1,sth2,cth12,sth12,cth2o,sth2o;
+		    g1=gamma[0]; g2=gamma[1];
+		    cth2=pos2[2]; cth12=prod;
+		    if((cth2>=1) || (cth2<=-1) || (cth12>=1) || (cth12<=-1))
+		      ctho=1.;
+		    sth2=sqrt(1-cth2*cth2); sth12=sqrt(1-cth12*cth12);
+		    cth1=pos1[2];
+		    ctho=(cth1-cth2*cth12)/(sth2*sth12);
+		    cth2o=2*ctho*ctho-1;
+		    sth2o=2*ctho*sqrt(1-ctho*ctho);
+		    gt= g1*cth2o+g2*sth2o;
+		    gr=-g1*sth2o+g2*cth2o;
+		    hthread[ith]+=pos1[3];
+		    gtthread[ith]+=pos1[3]*pos2[3]*gt;
+		    grthread[ith]+=pos1[3]*pos2[3]*gr;
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    } // end omp for
+
+#pragma omp critical
+    {
+      for(j=0;j<nb_theta;j++) {
+	hh[j] +=hthread[j];
+	gth[j]+=gtthread[j];
+	grh[j]+=grthread[j];
+      }
+    }
+
+    free(hthread);
+    free(gtthread);
+    free(grthread);
   } //end omp parallel
 }
