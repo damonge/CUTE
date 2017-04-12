@@ -8,8 +8,8 @@ DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP head
 #DEFINEOPTIONS += -D_TRUE_ACOS #Comment this out if you don't want to use an approximate arccosine
 DEFINEOPTIONS += -D_WITH_WEIGHTS #Comment this out if you want weighed galaxies
 #GSL options
-GSL_INC = /home/damonge/include
-GSL_LIB = /home/damonge/lib
+GSL_INC = /users/damonge/include
+GSL_LIB = /users/damonge/lib
 
 #CUDA options
 #Monopole - maximum radius in Mpc/h

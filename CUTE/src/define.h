@@ -138,6 +138,7 @@ typedef struct {
   double *pos;
   int has_shear;
   double *gamma;
+  double *phi;
 } Box2DInfo;
 
 typedef struct {

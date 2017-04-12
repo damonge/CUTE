@@ -93,9 +93,11 @@ static Cell2D *init_Cells2D(int npix)
 //Box2D
 static void free_Box2DInfo(Box2DInfo *bi)
 {
-  if(bi->has_shear)
+  if(bi->has_shear) {
     free(bi->gamma);
+  }
   free(bi->pos);
+  free(bi->phi);  //ATTENTION: NON-OPTIMAL!!!
   free(bi);
 }
 
@@ -115,8 +117,10 @@ static Box2DInfo *init_Box2DInfo(int np,int has_shear)
   Box2DInfo *bi=(Box2DInfo *)my_malloc(sizeof(Box2DInfo));
   bi->has_shear=has_shear;
   bi->pos=(double *)my_malloc(N_POS*np*sizeof(double));
-  if(has_shear)
+  if(has_shear) {
     bi->gamma=(double *)my_malloc(2*np*sizeof(double));
+  }
+  bi->phi=(double *)my_malloc(np*sizeof(double)); //ATTENTION: NON-OPTIMAL!!!
 
   return bi;
 }
@@ -596,6 +600,7 @@ Box2D *mk_Boxes2D_from_Catalog(Catalog *cat,int **box_indices,int *n_box_full)
       (boxes[ipix].bi)->gamma[2*np0+0]=cat->gamma1[ii];
       (boxes[ipix].bi)->gamma[2*np0+1]=cat->gamma2[ii];
     }
+    (boxes[ipix].bi)->phi[np0]=phi;  //ATTENTION: NON-OPTIMAL!!!
     boxes[ipix].np++;
   }
 

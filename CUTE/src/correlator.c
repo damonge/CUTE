@@ -1989,6 +1989,12 @@ void cross_ang_bf_shear(int npix_full,int *indices,
 	int icth;
 	double *pos1=&(bi1->pos[N_POS*ii]);
 	double *gamma=&(bi1->gamma[2*ii]);
+	double phi_1=bi1->phi[ii];
+	double sth1,cth1=pos1[2];
+	if(fabs(cth1)>=1.)
+	  sth1=0;
+	else 
+	  sth1=sqrt(1-cth1*cth1);
 	for(icth=bounds[0];icth<=bounds[1];icth++) {
 	  int iphi;
 	  int icth_n=icth*n_side_phi;
@@ -2006,17 +2012,38 @@ void cross_ang_bf_shear(int npix_full,int *indices,
 		if(prod>cth_max) {
 		  int ith=th2bin(prod);
 		  if((ith<nb_theta)&&(ith>=0)) {
-		    double g1,g2,gt,gr,ctho,cth2,cth1,sth2,cth12,sth12,cth2o,sth2o;
-		    g1=gamma[0]; g2=gamma[1];
-		    cth2=pos2[2]; cth12=prod;
-		    if((cth2>=1) || (cth2<=-1) || (cth12>=1) || (cth12<=-1))
-		      ctho=1.;
-		    sth2=sqrt(1-cth2*cth2); sth12=sqrt(1-cth12*cth12);
-		    cth1=pos1[2];
-		    ctho=(cth1-cth2*cth12)/(sth2*sth12);
+		    double gt,gr,ctho,stho,sth12,cth2o,sth2o;
+		    double g1=gamma[0];
+		    double g2=gamma[1];
+		    double cth2=pos2[2];
+		    double cth12=prod;
+		      
+		    if((sth1<=0) || (cth12>=1) || (cth12<=-1)) {
+		      ctho=1;
+		      stho=0;
+		    }
+		    else {
+		      double sth12,phi_2=bi2->phi[jj];
+		      sth12=sqrt(1-cth12*cth12);
+		      ctho=(cth2-cth1*cth12)/(sth1*sth12);
+		      if(fabs(ctho)>1.00001) {
+			printf("First fuckup %lE %lE %lE %lE %lE %lE\n",ctho,cth1,cth2,sth2,cth12,sth12);
+			exit(1);
+		      }
+		      if(fabs(ctho)>1) {
+			ctho=1;
+			stho=0;
+		      }
+		      else {
+			if(sin(phi_2-phi_1)>0) //Not sure about this sign
+			  stho= sqrt(1-ctho*ctho);
+			else
+			  stho=-sqrt(1-ctho*ctho);
+		      }
+		    }
 		    cth2o=2*ctho*ctho-1;
-		    sth2o=2*ctho*sqrt(1-ctho*ctho);
-		    gt= g1*cth2o+g2*sth2o;
+		    sth2o=2*ctho*stho;
+ 		    gt= g1*cth2o+g2*sth2o;
 		    gr=-g1*sth2o+g2*cth2o;
 		    hthread[ith]+=pos1[3];
 		    gtthread[ith]+=pos1[3]*pos2[3]*gt;

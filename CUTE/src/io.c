@@ -210,7 +210,7 @@ void write_CF_shear(char *fname,histo_t *D1D2,double *gtH,double *grH)
 	corr_t=gtH[ii]/D1D2[ii];
 	corr_r=grH[ii]/D1D2[ii];
       }
-      fprintf(fo,"%lE %lE %lE",th,corr_t,corr_r);
+      fprintf(fo,"%lE %lE %lE ",th,corr_t,corr_r);
 #ifdef _WITH_WEIGHTS
       fprintf(fo,"%lE ",D1D2[ii]);
 #else //_WITH_WEIGHTS
