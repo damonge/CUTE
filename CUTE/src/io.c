@@ -786,6 +786,8 @@ void read_run_params(char *fname)
       n_side_cth=atoi(s2);
       n_side_phi=2*n_side_cth;
     }
+    else if(!strcmp(s1,"flip_shear="))
+      flip_shear=atoi(s2);
     else
       fprintf(stderr,"CUTE: Unknown parameter %s\n",s1);
   }

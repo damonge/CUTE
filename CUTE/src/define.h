@@ -71,6 +71,8 @@ extern int n_side[3];
 extern int n_boxes3D;
 extern double l_box[3];
 
+extern int flip_shear;
+
 /*                MACROS            */
 // Other possible macros
 //_DEBUG, _VERBOSE, _TRUE_ACOS

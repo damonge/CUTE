@@ -86,5 +86,8 @@ int n_side_cth,n_side_phi,n_boxes2D;
 //3D boxing variables
 int n_side[3],n_boxes3D;
 double l_box[3];
+
+//Shear variables
+int flip_shear=0;
 ///
 ////////////////////////////////////////

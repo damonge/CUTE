@@ -1968,15 +1968,16 @@ void cross_ang_bf_shear(int npix_full,int *indices,
     grh[i]=0;
   }
 
-#pragma omp parallel default(none)			\
-  shared(npix_full,indices,boxes1,boxes2,hh,gth,grh)	\
-  shared(n_side_phi,nb_theta,i_theta_max,ipix_0,ipix_f)
+#pragma omp parallel default(none)					\
+  shared(npix_full,indices,boxes1,boxes2,hh,gth,grh)			\
+  shared(n_side_phi,nb_theta,i_theta_max,ipix_0,ipix_f,flip_shear)
   {
     int j;
     histo_t *hthread=(histo_t *)my_calloc(nb_theta,sizeof(histo_t));
     double *gtthread=(double *)my_calloc(nb_theta,sizeof(double));
     double *grthread=(double *)my_calloc(nb_theta,sizeof(double));
     double cth_max=cos(1/i_theta_max);
+    int flip_shear_thr=flip_shear;
 
 #pragma omp for nowait schedule(dynamic)
     for(j=ipix_0;j<ipix_f;j++) {
@@ -2027,7 +2028,7 @@ void cross_ang_bf_shear(int npix_full,int *indices,
 		      sth12=sqrt(1-cth12*cth12);
 		      ctho=(cth2-cth1*cth12)/(sth1*sth12);
 		      if(fabs(ctho)>1.00001) {
-			printf("First fuckup %lE %lE %lE %lE %lE %lE\n",ctho,cth1,cth2,sth2,cth12,sth12);
+			printf("First fuckup %lE %lE %lE %lE %lE %lE\n",ctho,cth2,cth1,sth1,cth12,sth12);
 			exit(1);
 		      }
 		      if(fabs(ctho)>1) {
@@ -2036,9 +2037,11 @@ void cross_ang_bf_shear(int npix_full,int *indices,
 		      }
 		      else {
 			if(sin(phi_2-phi_1)>0) //Not sure about this sign
-			  stho= sqrt(1-ctho*ctho);
-			else
 			  stho=-sqrt(1-ctho*ctho);
+			else
+			  stho= sqrt(1-ctho*ctho);
+			if(flip_shear_thr) //Flip if so desired
+			  stho*=-1;
 		      }
 		    }
 		    cth2o=2*ctho*ctho-1;
