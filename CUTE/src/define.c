@@ -30,11 +30,12 @@
 ///
 //File names
 int use_two_catalogs=0;             //Are we doing cross-correlations?
-char fnameData1[128]="file_none";   //Data catalog filename
-char fnameData2[128]="file_none";   //Data catalog filename
-char fnameRandom1[128]="file_none"; //Random catalog filename
-char fnameRandom2[128]="file_none"; //Random catalog filename
-char fnameOut[128]="file_none";     //Output filename
+char fnameData1[256]="file_none";   //Data catalog filename
+char fnameData2[256]="file_none";   //Data catalog filename
+char fnameRandom1[256]="file_none"; //Random catalog filename
+char fnameRandom2[256]="file_none"; //Random catalog filename
+char fnameOut[256]="file_none";     //Output filename
+char fnameRR[256]="file_none";     //RR filename
 
 //Correlation
 int corr_type=-1; //Type of CF

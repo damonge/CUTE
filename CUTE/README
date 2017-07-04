@@ -54,6 +54,15 @@ Several files are needed in any CUTE run:
               This, as well as data_filename_2 are only needed if
 	      cross-correlating two different datasets. Omit these parameters
 	      if you only want to compute the auto-correlation.
+    * RR_filename= FILENAME
+              Path to a file containing a previous computation of the same
+	      correlation function you want to calculate. The R1R2 histogram
+	      will be read from this file, and no time will be spent computing
+	      it from the random catalogs. Omit this parameter if you want 
+	      to compute R1R2 from the randoms. IMPORTANT: if you make use of
+	      this parameter, you should make sure that the file you pass was
+	      created by CUTE for the same pair of random catalogs, binning
+	      parameters and correlation function type.
     * input_format= INT
               Format of the data and random catalogs (both should use the
 	      same format). Three formats (0, 1 and 2) are currently supported

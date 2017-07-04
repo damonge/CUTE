@@ -177,10 +177,14 @@ void run_full_corr_bf(void)
     timer(2);
   }
   print_info(" - R-R \n");
-  if(use_two_catalogs)
-    cross_full_bf(nfull_ran,indices_ran,pixrad_ran,pixrad_ran_2,R1R2);
-  else
-    auto_full_bf(nfull_ran,indices_ran,pixrad_ran,R1R2);
+  if(strcmp(fnameRR,"file_none"))
+    read_RR(fnameRR,R1R2);
+  else {
+    if(use_two_catalogs)
+      cross_full_bf(nfull_ran,indices_ran,pixrad_ran,pixrad_ran_2,R1R2);
+    else
+      auto_full_bf(nfull_ran,indices_ran,pixrad_ran,R1R2);
+  }
   timer(1);
 
   print_info("\n");
@@ -384,10 +388,14 @@ void run_radial_corr_bf(void)
     timer(2);
   }
   print_info(" - R-R \n");
-  if(use_two_catalogs)
-    cross_rad_bf(nfull_ran,indices_ran,pixrad_ran_2,pixrad_ran_2,R1R2);
-  else
-    auto_rad_bf(nfull_ran,indices_ran,pixrad_ran,R1R2);
+  if(strcmp(fnameRR,"file_none"))
+    read_RR(fnameRR,R1R2);
+  else {
+    if(use_two_catalogs)
+      cross_rad_bf(nfull_ran,indices_ran,pixrad_ran_2,pixrad_ran_2,R1R2);
+    else
+      auto_rad_bf(nfull_ran,indices_ran,pixrad_ran,R1R2);
+  }
   timer(1);
 
   print_info("\n");
@@ -499,10 +507,14 @@ void run_angular_corr_bf(void)
     timer(2);
   }
   print_info(" - R-R \n");
-  if(use_two_catalogs) 
-    cross_ang_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
-  else
-    auto_ang_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  if(strcmp(fnameRR,"file_none"))
+    read_RR(fnameRR,R1R2);
+  else {
+    if(use_two_catalogs) 
+      cross_ang_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
+    else
+      auto_ang_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  }
   timer(1);
 
   print_info("\n");
@@ -708,10 +720,14 @@ void run_monopole_corr_bf(void)
     cross_mono_bf(nfull_dat_2,indices_dat_2,boxes_dat_2,boxes_ran,R1D2);
     timer(2);
   }
-  if(use_two_catalogs)
-    cross_mono_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
-  else
-    auto_mono_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  if(strcmp(fnameRR,"file_none"))
+    read_RR(fnameRR,R1R2);
+  else {
+    if(use_two_catalogs)
+      cross_mono_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
+    else
+      auto_mono_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  }
   timer(1);
 
   print_info("\n");
@@ -825,10 +841,14 @@ void run_3d_ps_corr_bf(void)
     timer(2);
   }
   print_info(" - R-R \n");
-  if(use_two_catalogs)
-    cross_3d_ps_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
-  else 
-    auto_3d_ps_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  if(strcmp(fnameRR,"file_none"))
+    read_RR(fnameRR,R1R2);
+  else {
+    if(use_two_catalogs)
+      cross_3d_ps_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
+    else 
+      auto_3d_ps_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  }
   timer(1);
 
   print_info("\n");
@@ -944,10 +964,14 @@ void run_3d_rm_corr_bf(void)
     timer(2);
   }
   print_info(" - R-R \n");
-  if(use_two_catalogs)
-    cross_3d_rm_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
-  else 
-    auto_3d_rm_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  if(strcmp(fnameRR,"file_none"))
+    read_RR(fnameRR,R1R2);
+  else {
+    if(use_two_catalogs)
+      cross_3d_rm_bf(nfull_ran,indices_ran,boxes_ran,boxes_ran_2,R1R2);
+    else 
+      auto_3d_rm_bf(nfull_ran,indices_ran,boxes_ran,R1R2);
+  }
   timer(1);
 
   print_info("\n");

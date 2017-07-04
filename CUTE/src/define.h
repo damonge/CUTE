@@ -28,11 +28,12 @@
 #endif //_HAVE_MPI
 
 extern int use_two_catalogs;
-extern char fnameData1[128];
-extern char fnameData2[128];
-extern char fnameRandom1[128];
-extern char fnameRandom2[128];
-extern char fnameOut[128];
+extern char fnameData1[256];
+extern char fnameData2[256];
+extern char fnameRandom1[256];
+extern char fnameRandom2[256];
+extern char fnameOut[256];
+extern char fnameRR[256];
 
 extern int corr_type;
 

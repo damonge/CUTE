@@ -112,6 +112,8 @@ void set_r_z(void);
 
 
 //I/O functions
+void read_RR(char *fname,histo_t *R1R2);
+
 void write_CF(char *fname,histo_t *D1D2,histo_t *D1R2,histo_t *R1D2,histo_t *R1R2,
 	      np_t sum_wd,np_t sum_wd2,np_t sum_wr,np_t sum_wr2,
 	      np_t sum_wd_2,np_t sum_wd2_2,np_t sum_wr_2,np_t sum_wr2_2);

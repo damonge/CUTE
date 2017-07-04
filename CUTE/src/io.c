@@ -145,6 +145,73 @@ static double make_CF(histo_t D1D2,histo_t D1R2,histo_t R1D2,histo_t R1R2,
   }
 }
 
+void read_RR(char *fname,histo_t *R1R2)
+{
+  //////
+  // Writes correlation function to file fname
+  FILE *fi;
+  int ii;
+  
+  int num_cols=-1;
+  int num_rows=-1;
+  if(corr_type==0) {
+    num_rows=nb_dz;
+    num_cols=6;
+  }
+  else if(corr_type==1) {
+    num_rows=nb_theta;
+    num_cols=6;
+  }
+  else if(corr_type==2) {
+    num_rows=nb_r;
+    num_cols=6;
+  }
+  else if(corr_type==3) {
+    num_rows=nb_rt*nb_rl;
+    num_cols=7;
+  }
+  else if(corr_type==4) {
+    num_rows=nb_r*nb_mu;
+    num_cols=7;
+  }
+  else if(corr_type==5) {
+    num_rows=nb_red*nb_dz*nb_theta;
+    num_cols=8;
+  }
+  if((num_rows<=0) || (num_cols<=0)) {
+    fprintf(stderr,"CUTE: wrong correlation function type\n");
+    exit(1);
+  }
+
+  print_info("*** Reading RR from file ");
+#ifdef _VERBOSE
+  print_info("%s ",fname);
+#endif
+  print_info("\n");
+
+  fi=fopen(fname,"w");
+  if(fi==NULL)
+    error_open_file(fname);
+
+  for(ii=0;ii<num_rows;ii++) {
+    int jj,stat;
+    double dum;
+    for(jj=0;jj<num_cols-1;jj++) { //Read the first columns  (irrelevant)
+      stat=fscanf(fi,"%lE",&dum);
+      if(stat!=1)
+	error_read_line(fname,ii+1);
+    }
+#ifdef _WITH_WEIGHTS
+    stat=fscanf(fi,"%lE",&(R1R2[ii]));
+#else //_WITH_WEIGHTS
+    stat=fscanf(fi,"%llu",&(R1R2[ii]));
+#endif //_WITH_WEIGHTS
+  }
+  fclose(fi);
+    
+  printf("\n");
+}
+
 void write_CF(char *fname,
 	      histo_t *D1D2,histo_t *D1R2,histo_t *R1D2,histo_t *R1R2,
 	      np_t sum_wd,np_t sum_wd2,np_t sum_wr,np_t sum_wr2,
@@ -643,6 +710,8 @@ void read_run_params(char *fname)
       sprintf(fnameRandom1,"%s",s2);
     else if(!strcmp(s1,"random_filename_2="))
       sprintf(fnameRandom2,"%s",s2);
+    else if(!strcmp(s1,"RR_filename="))
+      sprintf(fnameRR,"%s",s2);
     else if(!strcmp(s1,"input_format="))
       input_format=atoi(s2);
     else if(!strcmp(s1,"output_filename="))
