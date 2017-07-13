@@ -161,7 +161,7 @@ void make_CF_3Dps(unsigned long long *DD,int nD,
 #endif //_LOGBIN
 	rl0=irl/(I_RL_MAX*NB_RL);
 	rl1=(irl+1)/(I_RL_MAX*NB_RL);
-	vr=(rl1-rl0)*M_PI*(rt1*rt1-rt0*rt0);
+	vr=2*(rl1-rl0)*M_PI*(rt1*rt1-rt0*rt0);
 	rho_r=DD[irt*NB_RL+irl]/(nD*vr);
 	corr[irt*NB_RL+irl]=rho_r/rho_av-1;
 	ercorr[irt*NB_RL+irl]=(1+corr[irt*NB_RL+irl])*edd[irt*NB_RL+irl];
