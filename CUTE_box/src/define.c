@@ -48,6 +48,9 @@ int max_tree_nparts=-1;
 //PM stuff
 int use_pm=-1;        //Should I use PM?
 int n_grid=-1;        //# cells per side (CUTE_box)
+
+//2PCF type
+int corr_type=0;
 ///
 //////////////////////////////////////
 

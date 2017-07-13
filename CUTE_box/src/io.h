@@ -23,8 +23,11 @@
 #ifndef _CUTE_IO_BOX_
 #define _CUTE_IO_BOX_
 
-void make_CF(unsigned long long DD[],int nD,
-	     double corr[],double ercorr[]);
+void make_CF(unsigned long long *DD,int nD,
+	     double *corr,double *ercorr);
+
+void make_CF_3Dps(unsigned long long *DD,int nD,
+		  double *corr,double *ercorr);
 
 void read_run_params(char *fname);
 

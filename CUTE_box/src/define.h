@@ -40,6 +40,7 @@ extern lint n_objects;
 extern float l_box;
 extern float l_box_half;
 extern int n_grid;
+extern int corr_type;
 /*                MACROS            */
 // Other possible macros
 //_DEBUG, _VERBOSE, _TRUE_ACOS, _LOGBIN
@@ -62,6 +63,21 @@ extern int n_grid;
 #endif
 #ifndef NB_R
 #define NB_R 256 //# bins in r for monopole correlation
+#endif
+#ifndef I_RT_MAX
+#define I_RT_MAX 0.005 //1/rt_max
+#endif
+#ifndef LOG_RT_MAX
+#define LOG_RT_MAX 2.30103 //log10(rt_max)
+#endif
+#ifndef NB_RT
+#define NB_RT 256 //# bins in rt for 2D correlation
+#endif
+#ifndef I_RL_MAX
+#define I_RL_MAX 0.005 //1/rl_max
+#endif
+#ifndef NB_RL
+#define NB_RL 256 //# bins in rl for 2D correlation
 #endif
 
 typedef struct {

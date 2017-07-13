@@ -79,8 +79,8 @@ static size_t my_fread(void *p,size_t size,
   return nread;
 }
 
-void make_CF(unsigned long long DD[],int nD,
-	     double corr[],double ercorr[])
+void make_CF(unsigned long long *DD,int nD,
+	     double *corr,double *ercorr)
 {
   //////
   // Creates correlation function and poisson errors
@@ -117,6 +117,55 @@ void make_CF(unsigned long long DD[],int nD,
       rho_r=DD[ii]/(nD*vr);
       corr[ii]=rho_r/rho_av-1;
       ercorr[ii]=(1+corr[ii])*edd[ii];
+    }
+  }
+
+  free(edd);
+}
+
+void make_CF_3Dps(unsigned long long *DD,int nD,
+		  double *corr,double *ercorr)
+{
+  //////
+  // Creates correlation function and poisson errors
+  // from pair counts DD, DR and RR
+  double *edd;
+  double rho_av=nD/(l_box*l_box*l_box);
+  int irt;
+
+  edd=(double *)malloc(sizeof(double)*NB_RT*NB_RL);
+  if(edd==NULL)
+    error_mem_out();
+  
+#ifndef _LOGBIN
+  DD[0]-=nD; //Substract diagonal
+#endif //_LOGBIN
+  for(irt=0;irt<NB_RT*NB_RL;irt++)
+    edd[irt]=1./sqrt((double)DD[irt]);
+
+  for(irt=0;irt<NB_RT;irt++) {
+    int irl;
+    for(irl=0;irl<NB_RL;irl++) {
+      if(DD[irt*NB_RL+irl]==0) {
+	corr[irt*NB_RL+irl]=0;
+	ercorr[irt*NB_RL+irl]=0;
+      }
+      else {
+	double rt0,rt1,rl0,rl1,vr,rho_r;
+#ifdef _LOGBIN
+	rt0=pow(10.,(((double)irt-NB_RT)/N_LOGINT)+LOG_RT_MAX);
+	rt1=pow(10.,(((double)irt+1-NB_RT)/N_LOGINT)+LOG_RT_MAX);
+#else //_LOGBIN
+	rt0=irt/(I_RT_MAX*NB_RT);
+	rt1=(irt+1)/(I_RT_MAX*NB_RT);
+#endif //_LOGBIN
+	rl0=irl/(I_RL_MAX*NB_RL);
+	rl1=(irl+1)/(I_RL_MAX*NB_RL);
+	vr=(rl1-rl0)*M_PI*(rt1*rt1-rt0*rt0);
+	rho_r=DD[irt*NB_RL+irl]/(nD*vr);
+	corr[irt*NB_RL+irl]=rho_r/rho_av-1;
+	ercorr[irt*NB_RL+irl]=(1+corr[irt*NB_RL+irl])*edd[irt*NB_RL+irl];
+      }
     }
   }
 
@@ -163,6 +212,18 @@ static void check_params(void)
     use_pm=0;
     use_tree=1;
   }
+
+  if(corr_type<0) {
+    fprintf(stderr,"CUTE: correlation function type not specified\n");
+    exit(1);
+  }
+  else if(corr_type!=0) {
+    if((use_pm) || (use_tree)) {
+      fprintf(stderr,"CUTE: pi-sigma correlation functions only implemented ");
+      fprintf(stderr,"through the brute-force approach\n");
+      exit(1);
+    }
+  }      
 
   if(use_tree<0) {
     fprintf(stderr,"CUTE: No Tree option was provided \n");
@@ -264,6 +325,16 @@ void read_run_params(char *fname)
       use_pm=atoi(s2);
     else if(!strcmp(s1,"n_grid_side="))
       n_grid=atoi(s2);
+    else if(!strcmp(s1,"corr_type=")) {
+      if(!strcmp(s2,"monopole"))
+	corr_type=0;
+      else if(!strcmp(s2,"3D_ps"))
+	corr_type=1;
+      else {
+	fprintf(stderr,"Unknown correlation type %s\n",s2);
+	exit(1);
+      }
+    }
     else
       fprintf(stderr,"CUTE: Unknown parameter %s\n",s1);
   }

@@ -24,16 +24,21 @@
 #define _CUTE_CORRELATOR_
 
 void corr_mono_box_bf(lint np,double *pos,
-		      unsigned long long hh[]);
+		      unsigned long long *hh);
 
-void corr_mono_box_pm(double *grid,double corr[],double ercorr[],
-		      unsigned long long DD[]);
+void corr_mono_box_pm(double *grid,double *corr,double *ercorr,
+		      unsigned long long *DD);
 
 void corr_mono_box_tree(lint np,double *pos,
-			branch *tree,unsigned long long hh[]);
+			branch *tree,unsigned long long *hh);
 
 void corr_mono_box_neighbors(int nside,NeighborBox *boxes,
 			     lint np,double *pos,
-			     unsigned long long hh[]);
+			     unsigned long long *hh);
+
+void corr_3Dps_box_bf(lint np,double *pos,unsigned long long *hh);
+
+void corr_3Dps_box_neighbors(int nside,NeighborBox *boxes,
+			     lint np,double *pos,unsigned long long *hh);
 
 #endif //_CUTE_CORRELATOR_

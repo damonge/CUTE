@@ -76,6 +76,13 @@ Several files are needed in any CUTE run:
     * max_tree_nparts= INT
               Initial leaves will be combined so that no group of 8 has less
 	      than max_tree_nparts particles.
+    * corr_type= STRING
+              Type of correlation function you want to compute. Set to
+	      "monopole" for the angle-averaged correlation function or
+	      "3D_ps" for the pi-sigma correlation function. Note that,
+	      in computing the the pi-sigma the code will assume a
+	      flat-sky where the third coordinate of each particle is
+	      aligned with the LOS (i.e. the pi direction).
     
     Any blank line or any line starting with the character '#' in the
     parameter file will be ignored. An example of this file is provided with
@@ -92,6 +99,9 @@ Several files are needed in any CUTE run:
     other columns, which will be ignored, but the first 3 must be the ones
     above.
 
+    Note that, for the pi-sigma correlation function, the code will assume
+    that the z coordinate is aligned with pi.
+
 
 4 The compile-time options:
 
@@ -100,9 +110,15 @@ compile-time options defined at the beginning of the Makefile. The only ones
 relevant for CUTE_box are:
 
    >For the monopole correlation function:
-   * R_MAX=<> -> maximum radius to which the monopole correlation function
-                 is calculated (in current length units).
-   * NB_R=<>  -> #bins for the monopole correlation function.
+   * R_MAX=<>  -> maximum radius to which the monopole correlation function
+                  is calculated (in current length units).
+   * NB_R=<>   -> #bins for the monopole correlation function.
+   * RT_MAX=<> -> maximum distance in the transverse direction 
+                  (sigma) used for the calculation of the pi-sigma 2PCF.
+   * NB_RT=<>  -> #bins in sigma for the pi-sigma correlation function.
+   * RL_MAX=<> -> maximum distance in the radial direction 
+                  (sigma) used for the calculation of the pi-sigma 2PCF.
+   * NB_RL=<>  -> #bins in pi for the pi-sigma correlation function.
 
    >Logarithmic binning can be selected through the flag -D_LOGBIN (see
     below). If set, the number of bins per decade can be set through
@@ -117,17 +133,24 @@ relevant for CUTE_box are:
    * -D_LOGBIN   -> logarithmic binning will be used. Note that
                     performance will be poorer when using
 		    logarithmic binning. Logarithmic binning is turned
-		    off if using the PM algorithm.
+		    off if using the PM algorithm. In any case, logarithmic
+		    binning will only be applied to the sigma direction
+		    when computing the pi-sigma 2PCF.
 
 
 5 The output file.
 
-The output file contains 6 columns:
+The output file contains 4 columns:
               r   xi(r)   error(r)   DD(r)
 In the case of brute-force algorithms, DD is the pair count histogram and
 the third column is the Poisson error calculated from DD. For the PM
 algorithm, DD contains the number of grid points at a distance r and
 error(r)==0.
+
+If computing the pi-sigma correlation function, the output columns will
+be:
+             sigma pi xi(sigma,pi) error(sigma,pi) DD(sigma,pi)
+where pi varies faster than sigma.
 
 
 6 The correlation function.

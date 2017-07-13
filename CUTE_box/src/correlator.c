@@ -36,9 +36,13 @@
 
 static const double I_DR=I_R_MAX*NB_R;
 static const double R2_MAX=1./(I_R_MAX*I_R_MAX);
+static const double I_DRT=I_RT_MAX*NB_RT;
+static const double RT2_MAX=1./(I_RT_MAX*I_RT_MAX);
+static const double I_DRL=I_RL_MAX*NB_RL;
+static const double RL2_MAX=1./(I_RL_MAX*I_RL_MAX);
 
 void corr_mono_box_bf(lint np,double *pos,
-		      unsigned long long hh[])
+		      unsigned long long *hh)
 {
   //////
   // Correlator for monopole in the periodic-box case
@@ -48,13 +52,15 @@ void corr_mono_box_bf(lint np,double *pos,
     hh[i]=0; //Clear shared histogram
   
 #pragma omp parallel default(none)		\
-  shared(pos,np,hh,l_box,l_box_half)
+  shared(pos,np,hh,l_box,l_box_half,stderr)
   {
     lint ii;
-    unsigned long long hthread[NB_R]; //Histogram filled by each thread
-
-    for(ii=0;ii<NB_R;ii++)
-      hthread[ii]=0; //Clear private histogram
+    unsigned long long *hthread; //Histogram filled by each thread
+    hthread=calloc(NB_R,sizeof(unsigned long long));
+    if(hthread==NULL) {
+      fprintf(stderr,"Out of memory\n");
+      exit(1);
+    }
 
 #pragma omp for nowait schedule(dynamic)
     for(ii=0;ii<np;ii++) {
@@ -90,11 +96,77 @@ void corr_mono_box_bf(lint np,double *pos,
       for(ii=0;ii<NB_R;ii++) //Check bound
 	hh[ii]+=hthread[ii]; //Add private histograms to shared one
     } // end pragma omp critical
+    free(hthread);
   } // end pragma omp parallel
 }
 
-void corr_mono_box_pm(double *grid,double corr[],double ercorr[],
-		      unsigned long long hh[])
+void corr_3Dps_box_bf(lint np,double *pos,
+		      unsigned long long *hh)
+{
+  //////
+  // Correlator for monopole in the periodic-box case
+  // by brute-force
+  int i;
+  for(i=0;i<NB_RT*NB_RL;i++)
+    hh[i]=0; //Clear shared histogram
+
+#pragma omp parallel default(none)		\
+  shared(pos,np,hh,l_box,l_box_half,stderr)
+  {
+    lint ii;
+    unsigned long long *hthread; //Histogram filled by each thread
+    hthread=calloc(NB_RT*NB_RL,sizeof(unsigned long long));
+    if(hthread==NULL) {
+      fprintf(stderr,"Out of memory\n");
+      exit(1);
+    }
+
+#pragma omp for nowait schedule(dynamic)
+    for(ii=0;ii<np;ii++) {
+      lint jj;
+      double *pos1=&(pos[3*ii]);
+      for(jj=0;jj<np;jj++) {
+	double xr[3];
+	double rt2,rl;
+	int irt,irl;
+	xr[0]=ABS(pos1[0]-pos[3*jj]);
+	xr[1]=ABS(pos1[1]-pos[3*jj+1]);
+	xr[2]=ABS(pos1[2]-pos[3*jj+2]);
+	if(xr[0]>l_box_half) xr[0]=l_box-xr[0];
+	if(xr[1]>l_box_half) xr[1]=l_box-xr[1];
+	if(xr[2]>l_box_half) xr[2]=l_box-xr[2];
+	rt2=xr[0]*xr[0]+xr[1]*xr[1];
+	rl=xr[2];
+	if(rt2>RT2_MAX) continue;
+	if(rl*rl>RL2_MAX) continue;
+
+	irl=(int)(rl*I_DRL);
+	if((irl>=0) && (irl<NB_RL)) {
+#ifdef _LOGBIN
+	  if(rt2>0) {
+	    irt=(int)(N_LOGINT*(0.5*log10(rt2)-LOG_RT_MAX)+NB_RT);
+	    if((irt<NB_RT)&&(irt>=0))
+	      (hthread[NB_RL*irt+irl])++;
+	  }
+#else //_LOGBIN
+	  irt=(int)(sqrt(rt2)*I_DRT);
+	  if((irt<NB_RT)&&(irt>=0))
+	    (hthread[NB_RL*irt+irl])++;
+#endif //_LOGBIN
+	}
+      }
+    } // end pragma omp for
+#pragma omp critical
+    {
+      for(ii=0;ii<NB_RT*NB_RL;ii++) //Check bound
+	hh[ii]+=hthread[ii]; //Add private histograms to shared one
+    } // end pragma omp critical
+    free(hthread);
+  } // end pragma omp parallel
+}
+
+void corr_mono_box_pm(double *grid,double *corr,double *ercorr,
+		      unsigned long long *hh)
 {
   //////
   // Correlator for monopole in the periodic-box case
@@ -144,24 +216,30 @@ void corr_mono_box_pm(double *grid,double corr[],double ercorr[],
   }
 
 #pragma omp parallel default(none)			\
-  shared(n_grid,grid,index_max,ibin_box,corr)
+  shared(n_grid,grid,index_max,ibin_box,corr,stderr)
   {
     lint ii;
-    double corr_thr[NB_R];
+    double *corr_thr;
     lint n_grid2=n_grid*n_grid,index_max2=index_max*index_max;
     int ngm1=n_grid-1;
 #ifdef _DO_BATCHES
-    double corr_batch[NB_R];
-    unsigned int hh_batch[NB_R];
+    double *corr_batch;
+    unsigned int *hh_batch;
 #endif //_DO_BATCHES
 
-    for(ii=0;ii<NB_R;ii++) {
-      corr_thr[ii]=0;
-#ifdef _DO_BATCHES
-      corr_batch[ii]=0;
-      hh_batch[ii]=0;
-#endif //_DO_BATCHES
+    corr_thr=calloc(NB_R,sizeof(double));
+    if(corr_thr==NULL) {
+      fprintf(stderr,"Out of memory\n");
+      exit(1);
     }
+#ifdef _DO_BATCHES
+    corr_batch=calloc(NB_R,sizeof(double));
+    hh_batch=calloc(NB_R,sizeof(unsigned int));
+    if((corr_batch==NULL) || (hh_batch==NULL)) {
+      fprintf(stderr,"Out of memory\n");
+      exit(1);
+    }
+#endif //_DO_BATCHES
     
 #pragma omp for nowait schedule(dynamic)
     for(ii=0;ii<n_grid2*n_grid;ii++) {
@@ -214,6 +292,10 @@ void corr_mono_box_pm(double *grid,double corr[],double ercorr[],
       for(ii=0;ii<NB_R;ii++)
 	corr[ii]+=corr_thr[ii];
     } //end pragma omp critical
+    free(corr_thr);
+#ifdef _DO_BATCHES
+    free(corr_batch); free(hth_batch);
+#endif //_DO_BATCHES
   } //end pragma omp parallel
 
   for(i=0;i<NB_R;i++) {
@@ -263,7 +345,7 @@ static int limit_dist2_point2box(double *x,float *x_l,float *x_h,
   return 0;
 }
 
-static void bin_branch(branch *br,double *x,unsigned long long hh[])
+static void bin_branch(branch *br,double *x,unsigned long long *hh)
 {
   //////
   // Bins branch br into histogram hh according to distance to x[3].
@@ -372,7 +454,7 @@ static void bin_branch(branch *br,double *x,unsigned long long hh[])
 }
 
 void corr_mono_box_tree(lint np,double *pos,branch *tree,
-			unsigned long long hh[])
+			unsigned long long *hh)
 {
   //////
   // Correlator for monopole in the periodic-box case
@@ -383,13 +465,15 @@ void corr_mono_box_tree(lint np,double *pos,branch *tree,
     hh[i]=0;
 
 #pragma omp parallel default(none)		\
-  shared(np,pos,tree,hh)
+  shared(np,pos,tree,hh,stderr)
   {
     lint ii;
-    unsigned long long hthread[NB_R];
-
-    for(ii=0;ii<NB_R;ii++)
-      hthread[ii]=0;
+    unsigned long long *hthread; //Histogram filled by each thread
+    hthread=calloc(NB_R,sizeof(unsigned long long));
+    if(hthread==NULL) {
+      fprintf(stderr,"Out of memory\n");
+      exit(1);
+    }
 
 #pragma omp for nowait schedule(dynamic)
     for(ii=0;ii<np;ii++) {
@@ -401,12 +485,13 @@ void corr_mono_box_tree(lint np,double *pos,branch *tree,
       for(ii=0;ii<NB_R;ii++)
 	hh[ii]+=hthread[ii];
     } //end pragma omp critical
+    free(hthread);
   } //end pragma omp parallel
 }
 
 void corr_mono_box_neighbors(int nside,NeighborBox *boxes,
 			     lint np,double *pos,
-			     unsigned long long hh[])
+			     unsigned long long *hh)
 {
   //////
   // Correlator for monopole in the periodic-box case
@@ -421,15 +506,17 @@ void corr_mono_box_neighbors(int nside,NeighborBox *boxes,
   for(i=0;i<NB_R;i++)
     hh[i]=0; //Clear shared histogram
 
-#pragma omp parallel default(none)			\
-  shared(index_max,nside,boxes,hh,l_box,np,pos,agrid)
+#pragma omp parallel default(none)				\
+  shared(index_max,nside,boxes,hh,l_box,np,pos,agrid,stderr)
   {
     lint ii;
     double a2grid=agrid*agrid;
-    unsigned long long hthread[NB_R]; //Histogram filled by each thread
-
-    for(ii=0;ii<NB_R;ii++)
-      hthread[ii]=0; //Clear private histogram
+    unsigned long long *hthread; //Histogram filled by each thread
+    hthread=calloc(NB_R,sizeof(unsigned long long));
+    if(hthread==NULL) {
+      fprintf(stderr,"Out of memory\n");
+      exit(1);
+    }
    
 #pragma omp for nowait schedule(dynamic)
     for(ii=0;ii<np;ii++) {
@@ -523,5 +610,137 @@ void corr_mono_box_neighbors(int nside,NeighborBox *boxes,
       for(ii=0;ii<NB_R;ii++) //Check bound
 	hh[ii]+=hthread[ii]; //Add private histograms to shared one
     } // end pragma omp critical
+    free(hthread);
+  } // end pragma omp parallel
+}
+
+void corr_3Dps_box_neighbors(int nside,NeighborBox *boxes,
+			     lint np,double *pos,
+			     unsigned long long *hh)
+{
+  //////
+  // Correlator for monopole in the periodic-box case
+  // using neighbor boxes  
+  double agrid=l_box/nside;
+  double r_max=sqrt(1./(I_RT_MAX*I_RT_MAX)+1./(I_RL_MAX*I_RL_MAX));
+  int index_max=(int)(r_max/agrid)+1;
+  int i;
+
+  printf("  Boxes will be correlated up to %d box sizes \n",index_max);
+  for(i=0;i<NB_RT*NB_RL;i++)
+    hh[i]=0; //Clear shared histogram
+
+#pragma omp parallel default(none)					\
+  shared(index_max,nside,boxes,hh,l_box,np,pos,agrid,stderr,r_max)
+  {
+    lint ii;
+    double r2_max=r_max*r_max;
+    double a2grid=agrid*agrid;
+    unsigned long long *hthread; //Histogram filled by each thread
+    hthread=calloc(NB_RT*NB_RL,sizeof(unsigned long long));
+    if(hthread==NULL) {
+      fprintf(stderr,"Out of memory\n");
+      exit(1);
+    }
+
+#pragma omp for nowait schedule(dynamic)
+    for(ii=0;ii<np;ii++) {
+      int ix0,iy0,iz0;
+      double x0,y0,z0;
+      int idz;
+      x0=pos[3*ii];
+      y0=pos[3*ii+1];
+      z0=pos[3*ii+2];
+      ix0=(int)(x0/l_box*nside);
+      iy0=(int)(y0/l_box*nside);
+      iz0=(int)(z0/l_box*nside);
+
+      for(idz=-index_max;idz<=index_max;idz++) {
+	int idy,idz_dist2;
+	int iwrapz=0;
+	int iz1=iz0+idz;
+	if(iz1<0) {
+	  iz1+=nside;
+	  iwrapz=1;
+	}
+	else if(iz1>=nside) {
+	  iz1-=nside;
+	  iwrapz=1;
+	}
+	idz_dist2=MAX(0,abs(idz)-1);
+	idz_dist2=idz_dist2*idz_dist2;
+	for(idy=-index_max;idy<=index_max;idy++) {
+	  int idx,idy_dist2;
+	  int iwrapy=0;
+	  int iy1=iy0+idy;
+	  if(iy1<0) {
+	    iy1+=nside;
+	    iwrapy=1;
+	  }
+	  else if(iy1>=nside) {
+	    iy1-=nside;
+	    iwrapy=1;
+	  }
+	  idy_dist2=MAX(0,abs(idy)-1);
+	  idy_dist2=idy_dist2*idy_dist2;
+	  for(idx=-index_max;idx<=index_max;idx++) {
+	    int ibox,idx_dist;
+	    int iwrapx=0;
+	    int ix1=ix0+idx;
+	    double d2max;
+	    int jj;
+	    if(ix1<0) {
+	      ix1+=nside;
+	      iwrapx=1;
+	    }
+	    else if(ix1>=nside) {
+	      ix1-=nside;
+	      iwrapx=1;
+	    }
+	    ibox=ix1+nside*(iy1+nside*iz1);
+	    idx_dist=MAX(0,abs(idx)-1);
+	    d2max=a2grid*(idx_dist*idx_dist+idy_dist2+idz_dist2);
+	    if(d2max>r2_max) continue;
+	    for(jj=0;jj<boxes[ibox].np;jj++) {
+	      double xr[3];
+	      double rt2,rl;
+	      int irt,irl;
+	      xr[0]=fabs(x0-(boxes[ibox].pos)[3*jj+0]);
+	      xr[1]=fabs(y0-(boxes[ibox].pos)[3*jj+1]);
+	      xr[2]=fabs(z0-(boxes[ibox].pos)[3*jj+2]);
+	      if(iwrapx) xr[0]=l_box-xr[0];
+	      if(iwrapy) xr[1]=l_box-xr[1];
+	      if(iwrapz) xr[2]=l_box-xr[2];
+	      rt2=xr[0]*xr[0]+xr[1]*xr[1];
+	      rl=xr[2];
+	      if(rt2>RT2_MAX) continue;
+	      if(rl*rl>RL2_MAX) continue;
+
+	      irl=(int)(rl*I_DRL);
+	      if((irl>=0) && (irl<NB_RL)) {
+#ifdef _LOGBIN
+		if(rt2>0) {
+		  irt=(int)(N_LOGINT*(0.5*log10(rt2)-LOG_RT_MAX)+NB_RT);
+		  if((irt<NB_RT)&&(irt>=0))
+		    (hthread[NB_RL*irt+irl])++;
+		}
+#else //_LOGBIN
+		irt=(int)(sqrt(rt2)*I_DRT);
+		if((irt<NB_RT)&&(irt>=0))
+		  (hthread[NB_RL*irt+irl])++;
+#endif //_LOGBIN
+	      }
+	    }
+	  }
+	}
+      }
+    } // end pragma omp for
+
+#pragma omp critical
+    {
+      for(ii=0;ii<NB_RT*NB_RL;ii++) //Check bound
+      	hh[ii]+=hthread[ii]; //Add private histograms to shared one
+    } // end pragma omp critical
+    free(hthread);
   } // end pragma omp parallel
 }

@@ -68,14 +68,57 @@ void write_CF(char *fname,double *corr,double *ercorr,
   printf("\n");
 }
 
-void run_monopole_corr_bf(void)
+void write_CF_3Dps(char *fname,double *corr,double *ercorr,
+		   unsigned long long *DD)
+{
+  //////
+  // Writes correlation function to file fname
+  FILE *fo;
+  int irt;
+
+  fo=fopen(fname,"w");
+  if(fo==NULL) {
+    char oname[64]="output_CUTE.dat";
+    fprintf(stderr,"CUTE: Error opening output file %s",fname);
+    fprintf(stderr,", using ./output_CUTE.dat");
+    fo=fopen(oname,"w");
+    if(fo==NULL) error_open_file(oname);
+  }
+
+  for(irt=0;irt<NB_RT;irt++) {
+    int irl;
+#ifdef _LOGBIN
+    double rt=pow(10,((irt+0.5)-NB_RT)/N_LOGINT+LOG_RT_MAX);
+#else //_LOGBIN
+    double rt=(irt+0.5)/(NB_RT*I_RT_MAX);
+#endif //_LOGBIN
+    for(irl=0;irl<NB_RL;irl++) {
+      double rl=(irl+0.5)/(NB_RL*I_RL_MAX);
+      fprintf(fo,"%lE %lE %lE %lE %llu \n",
+	      rt,rl,corr[irt*NB_RL+irl],ercorr[irt*NB_RL+irl],DD[irt*NB_RL+irl]);
+    }
+  }
+  fclose(fo);
+
+  printf("\n");
+}
+
+void run_correlation_bf(void)
 {
   //////
   // Main routine for monopole using brute-force
-  lint n_dat;
+  lint n_dat,nbins=0;
   Catalog cat_dat;
-  unsigned long long DD[NB_R];
-  double corr[NB_R],ercorr[NB_R];
+  unsigned long long *DD;
+  double *corr,*ercorr;
+  nbins=NB_R;
+  DD=calloc(nbins,sizeof(unsigned long long));
+  corr=calloc(nbins,sizeof(unsigned long long));
+  ercorr=calloc(nbins,sizeof(unsigned long long));
+  if((DD==NULL) || (corr==NULL) || (ercorr==NULL)) {
+    fprintf(stderr,"Out of memory\n");
+    exit(1);
+  }
 
   timer(4);
 
@@ -111,21 +154,33 @@ void run_monopole_corr_bf(void)
 
   printf("*** Cleaning up \n");
   free_catalog(cat_dat);
+  free(DD); free(corr); free(ercorr);
   printf("\n");
 
   timer(5);
 }
 
-void run_monopole_corr_neighbors(void)
+void run_correlation_neighbors(void)
 {
   //////
   // Main routine for monopole using neighbor boxes
-  lint n_dat;
+  lint n_dat,nbins=0;
   int nside;
   Catalog cat_dat;
   NeighborBox *boxes;
-  unsigned long long DD[NB_R];
-  double corr[NB_R],ercorr[NB_R];
+  unsigned long long *DD;
+  double *corr,*ercorr;
+  if(corr_type==0)
+    nbins=NB_R;
+  else
+    nbins=NB_RT*NB_RL;
+  DD=calloc(nbins,sizeof(unsigned long long));
+  corr=calloc(nbins,sizeof(unsigned long long));
+  ercorr=calloc(nbins,sizeof(unsigned long long));
+  if((DD==NULL) || (corr==NULL) || (ercorr==NULL)) {
+    fprintf(stderr,"Out of memory\n");
+    exit(1);
+  }
 
   timer(4);
 
@@ -143,7 +198,10 @@ void run_monopole_corr_neighbors(void)
 
   //Read data
   cat_dat=read_catalog(fnameData,&n_dat);
-  nside=optimal_nside(l_box,1./I_R_MAX,cat_dat.np);
+  if(corr_type==0)
+    nside=optimal_nside(l_box,1./I_R_MAX,cat_dat.np);
+  else
+    nside=optimal_nside(l_box,sqrt(1./(I_RT_MAX*I_RT_MAX)+1./(I_RL_MAX*I_RL_MAX)),cat_dat.np);
   boxes=catalog_to_boxes(nside,cat_dat);
 
 #ifdef _DEBUG
@@ -152,32 +210,49 @@ void run_monopole_corr_neighbors(void)
 
   printf("*** Correlating\n");
   timer(0);
-  corr_mono_box_neighbors(nside,boxes,cat_dat.np,
-			  cat_dat.pos,DD);
+  if(corr_type==0)
+    corr_mono_box_neighbors(nside,boxes,cat_dat.np,cat_dat.pos,DD);
+  else
+    corr_3Dps_box_neighbors(nside,boxes,cat_dat.np,cat_dat.pos,DD);
   timer(1);
   printf("\n");
 
   printf("*** Writing output \n");
-  make_CF(DD,n_dat,corr,ercorr);
-  write_CF(fnameOut,corr,ercorr,DD);
+  if(corr_type==0) {
+    make_CF(DD,n_dat,corr,ercorr);
+    write_CF(fnameOut,corr,ercorr,DD);
+  }
+  else {
+    make_CF_3Dps(DD,n_dat,corr,ercorr);
+    write_CF_3Dps(fnameOut,corr,ercorr,DD);
+  }
 
   printf("*** Cleaning up \n");
   free_catalog(cat_dat);
   free_boxes(nside,boxes);
+  free(DD); free(corr); free(ercorr);
   printf("\n");
 
   timer(5);
 }
 
-void run_monopole_corr_tree(void)
+void run_correlation_tree(void)
 {
   //////
   // Main routine for monopole using tree
-  lint n_dat;
+  lint n_dat,nbins=0;
   Catalog cat_dat;
   branch *tree;
-  unsigned long long DD[NB_R];
-  double corr[NB_R],ercorr[NB_R];
+  unsigned long long *DD;
+  double *corr,*ercorr;
+  nbins=NB_R;
+  DD=calloc(nbins,sizeof(unsigned long long));
+  corr=calloc(nbins,sizeof(unsigned long long));
+  ercorr=calloc(nbins,sizeof(unsigned long long));
+  if((DD==NULL) || (corr==NULL) || (ercorr==NULL)) {
+    fprintf(stderr,"Out of memory\n");
+    exit(1);
+  }
 
   timer(4);
 
@@ -218,20 +293,28 @@ void run_monopole_corr_tree(void)
   printf("*** Cleaning up \n");
   free_catalog(cat_dat);
   free_branch(tree);
-
+  free(DD); free(corr); free(ercorr);
   timer(5);
 }
 
-void run_monopole_corr_pm(void)
+void run_correlation_pm(void)
 {
   //////
   // Main routine for monopole using pm
 
-  lint n_dat;
+  lint n_dat,nbins=0;
   double *grid;
   Catalog cat_dat;
-  unsigned long long DD[NB_R];
-  double corr[NB_R],ercorr[NB_R];
+  unsigned long long *DD;
+  double *corr,*ercorr;
+  nbins=NB_R;
+  DD=calloc(nbins,sizeof(unsigned long long));
+  corr=calloc(nbins,sizeof(unsigned long long));
+  ercorr=calloc(nbins,sizeof(unsigned long long));
+  if((DD==NULL) || (corr==NULL) || (ercorr==NULL)) {
+    fprintf(stderr,"Out of memory\n");
+    exit(1);
+  }
   
   timer(4);
   
@@ -247,7 +330,6 @@ void run_monopole_corr_pm(void)
   printf(" - Using a PM approach\n");
   printf("\n");
   #endif
-  
 
   //Read data
   cat_dat=read_catalog(fnameData,&n_dat);
@@ -270,12 +352,13 @@ void run_monopole_corr_pm(void)
   
   printf("*** Cleaning up \n");
   free(grid);
+  free(DD); free(corr); free(ercorr);
   printf("\n");
   
   timer(5);
 }
 
-void run_monopole_corr_p3m(void)
+void run_correlation_p3m(void)
 {
   //////
 }
@@ -326,15 +409,14 @@ int main(int argc,char **argv)
   read_run_params(fnameIn);
 
   if(use_pm==1)
-    run_monopole_corr_pm();
+    run_correlation_pm();
   else if(use_pm==2)
-    run_monopole_corr_p3m();
+    run_correlation_p3m();
   else {
     if(use_tree)
-      run_monopole_corr_tree();
+      run_correlation_tree();
     else
-      run_monopole_corr_neighbors();
-    //      run_monopole_corr_bf();
+      run_correlation_neighbors();
   }
   
   printf("             Done !!!             \n\n");
