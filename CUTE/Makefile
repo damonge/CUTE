@@ -8,8 +8,8 @@ DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP head
 #DEFINEOPTIONS += -D_TRUE_ACOS #Comment this out if you don't want to use an approximate arccosine
 DEFINEOPTIONS += -D_WITH_WEIGHTS #Comment this out if you want weighed galaxies
 #GSL options
-GSL_INC = /home/damonge/include
-GSL_LIB = /home/damonge/lib
+GSL_INC = /home/alonso/include
+GSL_LIB = /home/alonso/lib
 
 #CUDA options
 #Monopole - maximum radius in Mpc/h
@@ -61,7 +61,7 @@ COMPCPU = gcc
 endif
 COMPGPU = nvcc
 OPTCPU = -Wall -O3 -fopenmp $(DEFINEFLAGSCPU)
-OPTCPU_GPU = -Wall -O3 $(DEFINEFLAGSGPU)
+OPTCPU_GPU = -Wall -O3 $(DEFINEFLAGSGPU) $(DEFINEFLAGSCPU)
 OPTGPU = -O3 $(DEFINEFLAGSGPU) -arch compute_20 $(OPT_PRECISION) -Xcompiler -Wall
 
 #INCLUDES AND LIBRARIES
