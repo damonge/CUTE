@@ -43,7 +43,6 @@ Several files are needed in any CUTE run:
     * data_filename= FILENAME
               See section 3.2 below.
     * random_filename= FILENAME
-              CUTE has the option of generating its own random catalogs.
 	      Please provide the catalog yourself using the same format as
 	      for the data.
     * data_filename_2= FILENAME
