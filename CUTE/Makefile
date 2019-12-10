@@ -6,6 +6,7 @@ DEFINEOPTIONS = -D_VERBOSE #Comment out for more explicit output
 DEFINEOPTIONS += -D_HAVE_OMP #Comment this out if you don't have the OpenMP headers
 #DEFINEOPTIONS += -D_DEBUG #Only used for debugging
 #DEFINEOPTIONS += -D_TRUE_ACOS #Comment this out if you don't want to use an approximate arccosine
+DEFINEOPTIONS += -D_FULL_MU_RANGE #Comment this out if you only want mu to go from 0 to 1.
 DEFINEOPTIONS += -D_WITH_WEIGHTS #Comment this out if you want weighed galaxies
 #GSL options
 GSL_INC = /home/alonso/include

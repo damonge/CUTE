@@ -1771,9 +1771,15 @@ void auto_3d_rm_bf(int nbox_full,int *indices,Box3D *boxes,
 	      int icth;
 	      if(r2==0) icth=0;
 	      else {
+#ifdef _FULL_MU_RANGE
 		double cth=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
 		  sqrt((xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2])*r2);
 		icth=(int)(cth*nb_mu);
+#else //_FULL_MU_RANGE
+		double cth=(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+		  sqrt((xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2])*r2);
+		icth=(int)((1+cth)*0.5*nb_mu);
+#endif //_FULL_MU_RANGE
 	      }
 	      if((icth<nb_mu)&&(icth>=0)) {
 #ifdef _WITH_WEIGHTS
@@ -1922,9 +1928,15 @@ void cross_3d_rm_bf(int nbox_full,int *indices,
 		      int icth;
 		      if(r2==0) icth=0;
 		      else {
+#ifdef _FULL_MU_RANGE
 			double cth=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
 			  sqrt((xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2])*r2);
 			icth=(int)(cth*nb_mu);
+#else //_FULL_MU_RANGE
+			double cth=(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+			  sqrt((xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2])*r2);
+			icth=(int)((1+cth)*0.5*nb_mu);
+#endif //_FULL_MU_RANGE
 		      }
 		      if((icth<nb_mu)&&(icth>=0)) {
 #ifdef _WITH_WEIGHTS

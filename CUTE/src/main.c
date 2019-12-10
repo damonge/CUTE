@@ -900,7 +900,11 @@ void run_3d_rm_corr_bf(void)
   print_info(" - Range: %.3lf < r < %.3lf Mpc/h\n",
 	 0.,1/i_r_max);
   print_info(" - #bins: %d\n",nb_r);
-  print_info(" - Range: 0.000 < mu < 1.000\n");
+#ifdef _FULL_MU_RANGE
+  print_info(" - Range: -1.000 < mu < 1.000\n");
+#else //_FULL_MU_RANGE 
+  print_info(" - Range: 0.000 < mu < 1.000\n"); 
+#endif //_FULL_MU_RANGE
   print_info(" - #bins: %d\n",nb_mu);
   if(logbin) {
     print_info(" - Logarithmic binning with %.3lf bins per decade\n",

@@ -359,7 +359,11 @@ void write_CF(char *fname,
 	
 	for(jj=0;jj<nb_mu;jj++) {
 	  double corr;
+#ifdef _FULL_MU_RANGE
+	  double mu=-1+2*(jj+0.5)/(nb_mu);
+#else //_FULL_MU_RANGE
 	  double mu=(jj+0.5)/(nb_mu);
+#endif //_FULL_MU_RANGE
 	  int ind=jj+nb_mu*ii;
 	  corr=make_CF(D1D2[ind],D1R2[ind],R1D2[ind],R1R2[ind],
 		       sum_wd,sum_wd2,sum_wr,sum_wr2,
