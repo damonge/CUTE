@@ -176,7 +176,7 @@ Several files are needed in any CUTE run:
 3.4 Note on the 2PCF estimator:
     CUTE now only supports the Landy & Szalay estimator, which in the case
     of cross correlations reads:
-       w = (D1D2 - D1R2 - R1D2 - R1R2)/R1R2,
+       w = (D1D2 - D1R2 - R1D2 + R1R2)/R1R2,
     where A1B2 is the normalized histogram of pair number counts between
     datasets A1 and B2, where A and B can be either data (D) or random (R).
 
