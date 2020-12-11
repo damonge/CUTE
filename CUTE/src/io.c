@@ -189,7 +189,7 @@ void read_RR(char *fname,histo_t *R1R2)
 #endif
   print_info("\n");
 
-  fi=fopen(fname,"w");
+  fi=fopen(fname,"r");
   if(fi==NULL)
     error_open_file(fname);
 
