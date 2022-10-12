@@ -2872,8 +2872,7 @@ void xi_th_Xcorr_bf_C(CuteBin *bin, int get_counts,
   cute_angular_corr_bf(bin, get_counts,
 		       dout, counts,
 		       n1c, cth1, phi1, w1,
-		       -1, NULL, NULL, NULL);
-  //		       n2c, cth2, phi2, w2);
+		       n2c, cth2, phi2, w2);
   for(ii=0;ii<bin->nbins;ii++)
     dout[bin->nbins+ii]=counts[ii];
   free(counts);

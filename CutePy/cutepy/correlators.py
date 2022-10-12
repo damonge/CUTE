@@ -4,8 +4,7 @@ from cutepy import cutelib as lib
 
 def _get_C_correlator(kind):
     if kind == 'xi_r':
-        raise ValueError(f"Unknown correlation kind {kind}.")
-        #return lib.xi_r_Acorr_bf_C, lib.xi_r_Xcorr_bf_C
+        return lib.xi_r_Acorr_bf_C, lib.xi_r_Xcorr_bf_C
     if kind == 'xi_theta':
         return lib.xi_th_Acorr_bf_C, lib.xi_th_Xcorr_bf_C
     else:
@@ -15,7 +14,8 @@ def _get_C_correlator(kind):
 class CuteCorrelator(object):
     kind = 'xi_r'
 
-    def __init__(self, bins, coords, weights=None, coords2=None, weights2=None):
+    def __init__(self, bins, coords, weights=None,
+                 coords2=None, weights2=None):
         self._check_bins(bins)
         self.bins = bins
         self.coords = coords
@@ -24,7 +24,26 @@ class CuteCorrelator(object):
         self.weights2 = weights2
         self.ww = None
         self.ct = None
+        self.ww_norm = self._get_ww_norm()
         self._cA, self._cX = _get_C_correlator(self.kind)
+
+    def _get_ww_norm(self):
+        n1 = len(self.coords[0])
+        if self.weights is None:
+            sum_w1 = n1
+            sum_w1_2 = n1
+        else:
+            sum_w1 = np.sum(self.weights)
+            sum_w1_2 = np.sum(self.weights**2)
+        if self.coords2 is None:
+            return 0.5*(sum_w1**2-sum_w1_2)
+        else:
+            n2 = len(self.coords2[0])
+            if self.weights2 is None:
+                sum_w2 = n2
+            else:
+                sum_w2 = np.sum(self.weights2)
+            return sum_w1*sum_w2
 
     def _check_bins(self, bins):
         pass
@@ -74,13 +93,17 @@ class CuteCorrelator(object):
         elif kind == 'tracer':  # Landy-Szalay
             if (rr is None) or (dr is None):
                 raise ValueError("Need RR and DR for L&S estimzator")
-            goodbins = rr.ww > 0
             xi = np.zeros(self.bins.nbins)
+            ddh = self.ww/self.ww_norm
+            rrh = rr.ww/rr.ww_norm
+            drh = dr.ww/dr.ww_norm
+            goodbins = rrh > 0
             if rd is not None:
-                drw = dr.ww+rd.ww
+                rdh = rd.ww/rd.ww_norm
             else:
-                drw = 2*dr.ww
-            xi[goodbins] = (dd.ww[goodbins]-drw[goodbins])/rr.ww[goodbins]+1
+                rdh = drh
+            # Landy-Szalay estimator
+            xi[goodbins] = (ddh-drh-rdh+rrh)[goodbins]/rrh[goodbins]
         else:
             raise ValueError(f"Unknown correlation type {kind}.")
         r = self.bins.get_r_values()

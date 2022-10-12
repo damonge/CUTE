@@ -7,14 +7,15 @@ class CuteBin(object):
         self._bin = None
 
         if is_log:
-            if(rmin_log is None):
+            if (rmin_log is None):
                 raise ValueError("I need an `rmin_log` if using log binning")
-            if(rmin_log >= rmax):
+            if (rmin_log >= rmax):
                 raise ValueError("`rmin_log` >= `rmax`!")
         if rmin_log is None:
             rmin_log = 0.
 
-        self._bin = lib.get_bins_C(nbins, int(is_log), rmax,  rmin_log, int(is_deg))
+        self._bin = lib.get_bins_C(nbins, int(is_log), rmax,  rmin_log,
+                                   int(is_deg))
         self.nbins = nbins
         self.is_log = is_log
         self.is_deg = is_deg
