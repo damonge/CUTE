@@ -631,7 +631,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_unique_file="src/cute_drivers.c"
+ac_unique_file="src/cute_bins.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS

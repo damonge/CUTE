@@ -8,7 +8,7 @@ AM_PROG_AR
 LT_PREREQ([2.2])
 LT_INIT([dlopen])
 
-AC_CONFIG_SRCDIR([src/cute_drivers.c])
+AC_CONFIG_SRCDIR([src/cute_bins.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Avoid problem with git timestamps

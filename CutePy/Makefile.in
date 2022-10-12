@@ -133,7 +133,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libcute_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libcute_la_OBJECTS = src/libcute_la-cute_drivers.lo
+am_libcute_la_OBJECTS = src/libcute_la-utils.lo \
+	src/libcute_la-cute_bins.lo src/libcute_la-cute_angular.lo
 libcute_la_OBJECTS = $(am_libcute_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -157,7 +158,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = src/$(DEPDIR)/libcute_la-cute_drivers.Plo
+am__depfiles_remade = src/$(DEPDIR)/libcute_la-cute_angular.Plo \
+	src/$(DEPDIR)/libcute_la-cute_bins.Plo \
+	src/$(DEPDIR)/libcute_la-utils.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -347,10 +350,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = README.md
 lib_LTLIBRARIES = libcute.la
-libcute_la_SOURCES = src/cute_drivers.c
+libcute_la_SOURCES = src/utils.c src/cute_bins.c src/cute_angular.c
 libcute_la_CPPFLAGS = $(OPENMP_CFLAGS) -I./src/
 libcute_la_LDFLAGS = $(OPENMP_CFLAGS) -lm
-include_HEADERS = src/cute_drivers.h
+include_HEADERS = src/cute.h
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -445,7 +448,11 @@ src/$(am__dirstamp):
 src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/$(DEPDIR)
 	@: > src/$(DEPDIR)/$(am__dirstamp)
-src/libcute_la-cute_drivers.lo: src/$(am__dirstamp) \
+src/libcute_la-utils.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libcute_la-cute_bins.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libcute_la-cute_angular.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 
 libcute.la: $(libcute_la_OBJECTS) $(libcute_la_DEPENDENCIES) $(EXTRA_libcute_la_DEPENDENCIES) 
@@ -459,7 +466,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libcute_la-cute_drivers.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libcute_la-cute_angular.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libcute_la-cute_bins.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libcute_la-utils.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -491,12 +500,26 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-src/libcute_la-cute_drivers.lo: src/cute_drivers.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/libcute_la-cute_drivers.lo -MD -MP -MF src/$(DEPDIR)/libcute_la-cute_drivers.Tpo -c -o src/libcute_la-cute_drivers.lo `test -f 'src/cute_drivers.c' || echo '$(srcdir)/'`src/cute_drivers.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libcute_la-cute_drivers.Tpo src/$(DEPDIR)/libcute_la-cute_drivers.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/cute_drivers.c' object='src/libcute_la-cute_drivers.lo' libtool=yes @AMDEPBACKSLASH@
+src/libcute_la-utils.lo: src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/libcute_la-utils.lo -MD -MP -MF src/$(DEPDIR)/libcute_la-utils.Tpo -c -o src/libcute_la-utils.lo `test -f 'src/utils.c' || echo '$(srcdir)/'`src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libcute_la-utils.Tpo src/$(DEPDIR)/libcute_la-utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/utils.c' object='src/libcute_la-utils.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/libcute_la-cute_drivers.lo `test -f 'src/cute_drivers.c' || echo '$(srcdir)/'`src/cute_drivers.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/libcute_la-utils.lo `test -f 'src/utils.c' || echo '$(srcdir)/'`src/utils.c
+
+src/libcute_la-cute_bins.lo: src/cute_bins.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/libcute_la-cute_bins.lo -MD -MP -MF src/$(DEPDIR)/libcute_la-cute_bins.Tpo -c -o src/libcute_la-cute_bins.lo `test -f 'src/cute_bins.c' || echo '$(srcdir)/'`src/cute_bins.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libcute_la-cute_bins.Tpo src/$(DEPDIR)/libcute_la-cute_bins.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/cute_bins.c' object='src/libcute_la-cute_bins.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/libcute_la-cute_bins.lo `test -f 'src/cute_bins.c' || echo '$(srcdir)/'`src/cute_bins.c
+
+src/libcute_la-cute_angular.lo: src/cute_angular.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/libcute_la-cute_angular.lo -MD -MP -MF src/$(DEPDIR)/libcute_la-cute_angular.Tpo -c -o src/libcute_la-cute_angular.lo `test -f 'src/cute_angular.c' || echo '$(srcdir)/'`src/cute_angular.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libcute_la-cute_angular.Tpo src/$(DEPDIR)/libcute_la-cute_angular.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/cute_angular.c' object='src/libcute_la-cute_angular.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcute_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/libcute_la-cute_angular.lo `test -f 'src/cute_angular.c' || echo '$(srcdir)/'`src/cute_angular.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -800,7 +823,9 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-		-rm -f src/$(DEPDIR)/libcute_la-cute_drivers.Plo
+		-rm -f src/$(DEPDIR)/libcute_la-cute_angular.Plo
+	-rm -f src/$(DEPDIR)/libcute_la-cute_bins.Plo
+	-rm -f src/$(DEPDIR)/libcute_la-utils.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -848,7 +873,9 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-		-rm -f src/$(DEPDIR)/libcute_la-cute_drivers.Plo
+		-rm -f src/$(DEPDIR)/libcute_la-cute_angular.Plo
+	-rm -f src/$(DEPDIR)/libcute_la-cute_bins.Plo
+	-rm -f src/$(DEPDIR)/libcute_la-utils.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
