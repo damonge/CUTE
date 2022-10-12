@@ -30,4 +30,9 @@ void cute_angular_corr_bf(CuteBin *bin, int get_counts,
 			  int n1, double *cth1, double *phi1, double *w1,
 			  int n2, double *cth2, double *phi2, double *w2);
 
+void cute_xi_r_corr_bf(CuteBin *bin, int get_counts,
+		       double *DD, unsigned long long *counts,
+		       int n1, double *x1, double *y1, double *z1, double *w1,
+		       int n2, double *x2, double *y2, double *z2, double *w2);
+
 #endif //_CUTE_

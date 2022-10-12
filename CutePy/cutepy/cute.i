@@ -2,7 +2,7 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
-#include "../src/cute_drivers.h"
+#include "../src/cute.h"
 %}
 
 %include "numpy.i"
@@ -10,7 +10,7 @@
   import_array();
 %}
 
-%include "../src/cute_drivers.h"
+%include "../src/cute.h"
 
 %apply (double* ARGOUT_ARRAY1, int DIM1) {(double* dout, int ndout)};
 %apply (int DIM1,double *IN_ARRAY1) {(int n1c, double *cth1),
@@ -74,6 +74,61 @@ void xi_th_Acorr_bf_C(CuteBin *bin, int get_counts,
 		       dout, counts,
 		       n1c, cth1, phi1, w1,
 		       -1, NULL, NULL, NULL);
+  for(ii=0;ii<bin->nbins;ii++)
+    dout[bin->nbins+ii]=counts[ii];
+  free(counts);
+}
+
+void xi_r_Xcorr_bf_C(CuteBin *bin, int get_counts,
+		     int n1x, double *x1,
+		     int n1y, double *y1,
+		     int n1z, double *z1,
+		     int n1w, double *w1,
+		     int n2x, double *x2,
+		     int n2y, double *y2,
+		     int n2z, double *z2,
+		     int n2w, double *w2,
+		     double *dout, int ndout)
+{
+  assert(ndout==2*bin->nbins);
+  assert(n1y==n1x);
+  assert(n1z==n1x);
+  assert(n1w==n1x);
+  assert(n2y==n2x);
+  assert(n2z==n2x);
+  assert(n2w==n2x);
+
+  unsigned long long *counts=(unsigned long long *)calloc(bin->nbins,
+							  sizeof(unsigned long long));
+  int ii;
+  cute_xi_r_corr_bf(bin, get_counts,
+		    dout, counts,
+		    n1x, x1, y1, z1, w1,
+		    n2x, x2, y2, z2, w2);
+  for(ii=0;ii<bin->nbins;ii++)
+    dout[bin->nbins+ii]=counts[ii];
+  free(counts);
+}
+
+void xi_r_Acorr_bf_C(CuteBin *bin, int get_counts,
+		      int n1x, double *x1,
+		      int n1y, double *y1,
+		      int n1z, double *z1,
+		      int n1w, double *w1,
+		      double *dout, int ndout)
+{
+  assert(ndout==2*bin->nbins);
+  assert(n1y==n1x);
+  assert(n1z==n1x);
+  assert(n1w==n1x);
+
+  unsigned long long *counts=(unsigned long long *)calloc(bin->nbins,
+							  sizeof(unsigned long long));
+  int ii;
+  cute_xi_r_corr_bf(bin, get_counts,
+		    dout, counts,
+		    n1x, x1, y1, z1, w1,
+		    -1, NULL, NULL, NULL, NULL);
   for(ii=0;ii<bin->nbins;ii++)
     dout[bin->nbins+ii]=counts[ii];
   free(counts);

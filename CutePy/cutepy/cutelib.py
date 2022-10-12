@@ -89,6 +89,9 @@ def cute_bin_free(bin):
 def cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2):
     return _cutelib.cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2)
 
+def cute_xi_r_corr_bf(bin, get_counts, DD, counts, n1, x1, y1, z1, w1, n2, x2, y2, z2, w2):
+    return _cutelib.cute_xi_r_corr_bf(bin, get_counts, DD, counts, n1, x1, y1, z1, w1, n2, x2, y2, z2, w2)
+
 def get_bins_C(nbins, islog, rmax, rmin_log, isdeg):
     return _cutelib.get_bins_C(nbins, islog, rmax, rmin_log, isdeg)
 
@@ -97,5 +100,11 @@ def xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, dout):
 
 def xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, dout):
     return _cutelib.xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, dout)
+
+def xi_r_Xcorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, n2x, x2, n2y, y2, n2z, z2, n2w, dout):
+    return _cutelib.xi_r_Xcorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, n2x, x2, n2y, y2, n2z, z2, n2w, dout)
+
+def xi_r_Acorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, dout):
+    return _cutelib.xi_r_Acorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, dout)
 
 
