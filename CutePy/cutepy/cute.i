@@ -15,9 +15,15 @@
 %apply (double* ARGOUT_ARRAY1, int DIM1) {(double* dout, int ndout)};
 %apply (int DIM1,double *IN_ARRAY1) {(int n1c, double *cth1),
                                      (int n1p, double *phi1),
+                                     (int n1x, double *x1),
+                                     (int n1y, double *y1),
+                                     (int n1z, double *z1),
                                      (int n1w, double *w1),
                                      (int n2c, double *cth2),
                                      (int n2p, double *phi2),
+                                     (int n2x, double *x2),
+                                     (int n2y, double *y2),
+                                     (int n2z, double *z2),
 				     (int n2w, double *w2)};
 
 %inline %{

@@ -276,7 +276,7 @@ static void cross_xi_r_bf(CuteBin *bin, CuteVolDecomp *vol,
 		  xr[0]=pos1[0]-pos2[0];
 		  xr[1]=pos1[1]-pos2[1];
 		  xr[2]=pos1[2]-pos2[2];
-		  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[1]*xr[1];
+		  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
 		  if(r2<r2_max) {
 		    int ir=r2bin(bin,r2);
 		    if((ir<bin->nbins)&&(ir>=0)) {
@@ -376,7 +376,7 @@ static void auto_xi_r_bf(CuteBin *bin, CuteVolDecomp *vol,
 	  xr[0]=pos1[0]-pos2[0];
 	  xr[1]=pos1[1]-pos2[1];
 	  xr[2]=pos1[2]-pos2[2];
-	  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[1]*xr[1];
+	  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
 	  if(r2<r2_max) {
 	    int ir=r2bin(bin,r2);
 	    if((ir<bin->nbins)&&(ir>=0)) {
@@ -406,7 +406,7 @@ static void auto_xi_r_bf(CuteBin *bin, CuteVolDecomp *vol,
 		    xr[0]=pos1[0]-pos2[0];
 		    xr[1]=pos1[1]-pos2[1];
 		    xr[2]=pos1[2]-pos2[2];
-		    r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[1]*xr[1];
+		    r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
 		    if(r2<r2_max) {
 		      int ir=r2bin(bin,r2);
 		      if((ir<bin->nbins)&&(ir>=0)) {

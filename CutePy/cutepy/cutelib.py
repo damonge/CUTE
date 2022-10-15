@@ -101,10 +101,10 @@ def xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, dout):
 def xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, dout):
     return _cutelib.xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, dout)
 
-def xi_r_Xcorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, n2x, x2, n2y, y2, n2z, z2, n2w, dout):
-    return _cutelib.xi_r_Xcorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, n2x, x2, n2y, y2, n2z, z2, n2w, dout)
+def xi_r_Xcorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, n2x, n2y, n2z, n2w, dout):
+    return _cutelib.xi_r_Xcorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, n2x, n2y, n2z, n2w, dout)
 
-def xi_r_Acorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, dout):
-    return _cutelib.xi_r_Acorr_bf_C(bin, get_counts, n1x, x1, n1y, y1, n1z, z1, n1w, dout)
+def xi_r_Acorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, dout):
+    return _cutelib.xi_r_Acorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, dout)
 
 
