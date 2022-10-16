@@ -19,18 +19,22 @@ typedef struct {
   double r_max;
   double i_r_max;
   double log_r_max;
+  int is_2D;
   int nbins2;
   int is_mu2;
-  int mu2_from_zero;
   double r_max2;
+  double i_r_max2;
+  int nbins_total;
 } CuteBin;
 
 CuteBin *cute_bin_new(int nr, int is_log, double rmax, double rmin_log, double unit);
 
 CuteBin *cute_bin_2d_new(int nr, int is_log, double rmax, double rmin_log,
-			 int nr2, int is_mu2, int mu2_from_zero, double rmax2);
+			 int nr2, int is_mu2, double rmax2);
 
 void cute_bin_free(CuteBin *bin);
+
+double cute_get_rmax(CuteBin *bin);
   
 void cute_angular_corr_bf(CuteBin *bin, int get_counts,
 			  double *DD, unsigned long long *counts,

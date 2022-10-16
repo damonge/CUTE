@@ -78,7 +78,8 @@ static CuteVolDecomp *cute_vol_decomp_from_points(CuteBin *bin,
   if(vol->l_box[1]>l_box_max) l_box_max=vol->l_box[1];
   if(vol->l_box[2]>l_box_max) l_box_max=vol->l_box[2];
 
-  int nside1=(int)(FRACTION_AR*l_box_max/bin->r_max);
+  double rmax=cute_get_rmax(bin);
+  int nside1=(int)(FRACTION_AR*l_box_max/rmax);
   int nside2=(int)(pow(0.5*npmin,0.3333333));
   int nside=MIN(nside1,nside2);
 
@@ -439,6 +440,569 @@ static void auto_xi_r_bf(CuteBin *bin, CuteVolDecomp *vol,
   } //end omp parallel
 }
 
+static void cross_xi_r_2D_bf(CuteBin *bin, CuteVolDecomp *vol,
+			     int nbox_full,int *indices,
+			     CuteBox3D *boxes1,CuteBox3D *boxes2,
+			     double *hh,unsigned long long *counts,
+			     int get_counts)
+{
+  //////
+  // Angular auto-correlator
+  int i,ibox_0,ibox_f;
+  // No MPI for now
+  //share_iters(nbox_full,&ibox_0,&ibox_f);
+  // Comment these out when we bring back MPI
+  ibox_0=0;
+  ibox_f=nbox_full;
+  
+
+  for(i=0;i<bin->nbins*bin->nbins2;i++) {
+    hh[i]=0;
+    if(get_counts)
+      counts[i]=0;
+  }
+
+#pragma omp parallel default(none)			\
+  shared(nbox_full,indices,boxes1,boxes2,hh,counts)	\
+  shared(bin,vol,ibox_0,ibox_f,get_counts)
+  {
+    int j;
+    int irange[3];
+    unsigned long long *cthread=NULL;
+    double *hthread=(double *)my_calloc(bin->nbins*bin->nbins2,
+					sizeof(double));
+    double r_max=cute_get_rmax(bin);
+    double r2_max=r_max*r_max;
+    double rt2_max=bin->r_max*bin->r_max;
+    if(get_counts) {
+      cthread=(unsigned long long *)my_calloc(bin->nbins*bin->nbins2,
+					      sizeof(unsigned long long));
+    }
+
+    for(j=0;j<3;j++) {
+      double dx=vol->l_box[j]/vol->n_side[j];
+      irange[j]=(int)(r_max/dx)+1;
+    }
+
+#pragma omp for nowait schedule(dynamic)
+    for(j=ibox_0;j<ibox_f;j++) {
+      int ii;
+      int ip1=indices[j];
+      int np1=boxes1[ip1].np;
+
+      int ix1=ip1%vol->n_side[0];
+      int iz1=ip1/(vol->n_side[0]*vol->n_side[1]);
+      int iy1=(ip1-ix1-iz1*vol->n_side[0]*vol->n_side[1])/vol->n_side[0];
+
+      int ixmin=MAX(ix1-irange[0],0);
+      int ixmax=MIN(ix1+irange[0],vol->n_side[0]-1);
+      int iymin=MAX(iy1-irange[1],0);
+      int iymax=MIN(iy1+irange[1],vol->n_side[1]-1);
+      int izmin=MAX(iz1-irange[2],0);
+      int izmax=MIN(iz1+irange[2],vol->n_side[2]-1);
+
+      for(ii=0;ii<np1;ii++) {
+	int iz;
+	double *pos1=&(boxes1[ip1].pos[4*ii]);
+        for(iz=izmin;iz<=izmax;iz++) {
+          int iy;
+          int iz_n=iz*vol->n_side[0]*vol->n_side[1];
+          for(iy=iymin;iy<=iymax;iy++) {
+            int ix;
+            int iy_n=iy*vol->n_side[0];
+            for(ix=ixmin;ix<=ixmax;ix++) {
+              int ip2=ix+iy_n+iz_n;
+	      if(boxes2[ip2].np>0) {
+		int jj;
+		int np2=boxes2[ip2].np;
+		for(jj=0;jj<np2;jj++) {
+		  double r2;
+		  double *pos2=&(boxes2[ip2].pos[4*jj]);
+		  double xr[3],xcm[3];
+		  xr[0]=pos1[0]-pos2[0];
+		  xr[1]=pos1[1]-pos2[1];
+		  xr[2]=pos1[2]-pos2[2];
+		  xcm[0]=0.5*(pos1[0]+pos2[0]);
+		  xcm[1]=0.5*(pos1[1]+pos2[1]);
+		  xcm[2]=0.5*(pos1[2]+pos2[2]);
+		  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
+		  if(r2<r2_max) {
+		    double rl=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+		      sqrt(xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2]);
+		    int irl=(int)(rl*bin->i_r_max2*bin->nbins2);
+		    if((irl<bin->nbins2)&&(irl>=0)) {
+		      double rt2=r2-rl*rl;
+		      if(rt2<rt2_max) {
+			int irt=r2bin(bin,rt2);
+			if((irt<bin->nbins)&&(irt>=0)) {
+			  hthread[irl+bin->nbins2*irt]+=pos1[3]*pos2[3];
+			  if(get_counts)
+			    cthread[irl+bin->nbins2*irt]++;
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    } // end omp for
+
+#pragma omp critical
+    {
+      for(j=0;j<bin->nbins*bin->nbins2;j++)
+	hh[j]+=hthread[j];
+      if(get_counts) {
+	for(j=0;j<bin->nbins*bin->nbins2;j++)
+	  counts[j]+=cthread[j];
+      }
+    }
+
+    free(hthread);
+    free(cthread);
+  } //end omp parallel
+}
+
+static void auto_xi_r_2D_bf(CuteBin *bin, CuteVolDecomp *vol,
+			    int nbox_full,int *indices,CuteBox3D *boxes,
+			    double *hh, unsigned long long *counts,
+			    int get_counts)
+{
+  //////
+  // Angular auto-correlator
+  int i,ibox_0,ibox_f;
+  // No MPI for now
+  //share_iters(nbox_full,&ibox_0,&ibox_f);
+  // Comment these out when we bring back MPI
+  ibox_0=0;
+  ibox_f=nbox_full;
+
+  for(i=0;i<bin->nbins*bin->nbins2;i++) {
+    hh[i]=0;
+    if(get_counts)
+      counts[i]=0;
+  }
+    
+
+#pragma omp parallel default(none)		\
+  shared(nbox_full,indices,boxes,hh,counts)	\
+  shared(bin,vol,ibox_0,ibox_f,get_counts)
+  {
+    int j;
+    int irange[3];
+    unsigned long long *cthread=NULL;
+    double *hthread=(double *)my_calloc(bin->nbins*bin->nbins2,
+					sizeof(double));
+    double r_max=cute_get_rmax(bin);
+    double r2_max=r_max*r_max;
+    double rt2_max=bin->r_max*bin->r_max;
+    if(get_counts) {
+      cthread=(unsigned long long *)my_calloc(bin->nbins*bin->nbins2,
+					      sizeof(unsigned long long));
+    }
+
+    for(j=0;j<3;j++) {
+      double dx=vol->l_box[j]/vol->n_side[j];
+      irange[j]=(int)(r_max/dx)+1;
+    }
+    
+#pragma omp for nowait schedule(dynamic)
+    for(j=ibox_0;j<ibox_f;j++) {
+      int ii;
+      int ip1=indices[j];
+      int np1=boxes[ip1].np;
+
+      int ix1=ip1%vol->n_side[0];
+      int iz1=ip1/(vol->n_side[0]*vol->n_side[1]);
+      int iy1=(ip1-ix1-iz1*vol->n_side[0]*vol->n_side[1])/vol->n_side[0];
+
+      int ixmin=MAX(ix1-irange[0],0);
+      int ixmax=MIN(ix1+irange[0],vol->n_side[0]-1);
+      int iymin=MAX(iy1-irange[1],0);
+      int iymax=MIN(iy1+irange[1],vol->n_side[1]-1);
+      int izmin=MAX(iz1-irange[2],0);
+      int izmax=MIN(iz1+irange[2],vol->n_side[2]-1);
+
+      for(ii=0;ii<np1;ii++) {
+	double *pos1=&(boxes[ip1].pos[4*ii]);
+	
+	int jj;
+	for(jj=ii+1;jj<np1;jj++) {
+	  double r2;
+	  double *pos2=&(boxes[ip1].pos[4*jj]);
+	  double xr[3],xcm[3];
+	  xr[0]=pos1[0]-pos2[0];
+	  xr[1]=pos1[1]-pos2[1];
+	  xr[2]=pos1[2]-pos2[2];
+	  xcm[0]=0.5*(pos1[0]+pos2[0]);
+	  xcm[1]=0.5*(pos1[1]+pos2[1]);
+	  xcm[2]=0.5*(pos1[2]+pos2[2]);
+	  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
+	  if(r2<r2_max) {
+	    double rl=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+	      sqrt(xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2]);
+	    int irl=(int)(rl*bin->i_r_max2*bin->nbins2);
+	    if((irl<bin->nbins2)&&(irl>=0)) {
+	      double rt2=r2-rl*rl;
+	      if(rt2<rt2_max) {
+		int irt=r2bin(bin,rt2);
+		if((irt<bin->nbins)&&(irt>=0)) {
+		  hthread[irl+bin->nbins2*irt]+=pos1[3]*pos2[3];
+		  if(get_counts)
+		    cthread[irl+bin->nbins2*irt]++;
+		}
+	      }
+	    }
+	  }
+	}
+
+        int iz;
+        for(iz=izmin;iz<=izmax;iz++) {
+          int iy;
+          int iz_n=iz*vol->n_side[0]*vol->n_side[1];
+          for(iy=iymin;iy<=iymax;iy++) {
+            int ix;
+            int iy_n=iy*vol->n_side[0];
+            for(ix=ixmin;ix<=ixmax;ix++) {
+              int ip2=ix+iy_n+iz_n;
+	      if(boxes[ip2].np>0) {
+		if(ip2>ip1) {
+		  int np2=boxes[ip2].np;
+		  for(jj=0;jj<np2;jj++) {
+		    double r2;
+		    double *pos2=&(boxes[ip2].pos[4*jj]);
+		    double xr[3],xcm[3];
+		    xr[0]=pos1[0]-pos2[0];
+		    xr[1]=pos1[1]-pos2[1];
+		    xr[2]=pos1[2]-pos2[2];
+		    xcm[0]=0.5*(pos1[0]+pos2[0]);
+		    xcm[1]=0.5*(pos1[1]+pos2[1]);
+		    xcm[2]=0.5*(pos1[2]+pos2[2]);
+		    r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
+		    if(r2<r2_max) {
+		      double rl=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+			sqrt(xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2]);
+		      int irl=(int)(rl*bin->i_r_max2*bin->nbins2);
+		      if((irl<bin->nbins2)&&(irl>=0)) {
+			double rt2=r2-rl*rl;
+			if(rt2<rt2_max) {
+			  int irt=r2bin(bin,rt2);
+			  if((irt<bin->nbins)&&(irt>=0)) {
+			    hthread[irl+bin->nbins2*irt]+=pos1[3]*pos2[3];
+			    if(get_counts)
+			      cthread[irl+bin->nbins2*irt]++;
+			  }
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    } // end omp for
+
+#pragma omp critical
+    {
+      for(j=0;j<bin->nbins*bin->nbins2;j++)
+	hh[j]+=hthread[j];
+      if(get_counts) {
+	for(j=0;j<bin->nbins*bin->nbins2;j++)
+	  counts[j]+=cthread[j];
+      }
+    }
+
+    free(hthread);
+    free(cthread);
+  } //end omp parallel
+}
+
+static void cross_xi_r_mu_bf(CuteBin *bin, CuteVolDecomp *vol,
+			     int nbox_full,int *indices,
+			     CuteBox3D *boxes1,CuteBox3D *boxes2,
+			     double *hh,unsigned long long *counts,
+			     int get_counts)
+{
+  //////
+  // Angular auto-correlator
+  int i,ibox_0,ibox_f;
+  // No MPI for now
+  //share_iters(nbox_full,&ibox_0,&ibox_f);
+  // Comment these out when we bring back MPI
+  ibox_0=0;
+  ibox_f=nbox_full;
+  
+
+  for(i=0;i<bin->nbins*bin->nbins2;i++) {
+    hh[i]=0;
+    if(get_counts)
+      counts[i]=0;
+  }
+
+#pragma omp parallel default(none)			\
+  shared(nbox_full,indices,boxes1,boxes2,hh,counts)	\
+  shared(bin,vol,ibox_0,ibox_f,get_counts)
+  {
+    int j;
+    int irange[3];
+    unsigned long long *cthread=NULL;
+    double *hthread=(double *)my_calloc(bin->nbins*bin->nbins2,
+					sizeof(double));
+    double r_max=cute_get_rmax(bin);
+    double r2_max=r_max*r_max;
+    if(get_counts) {
+      cthread=(unsigned long long *)my_calloc(bin->nbins*bin->nbins2,
+					      sizeof(unsigned long long));
+    }
+
+    for(j=0;j<3;j++) {
+      double dx=vol->l_box[j]/vol->n_side[j];
+      irange[j]=(int)(r_max/dx)+1;
+    }
+
+#pragma omp for nowait schedule(dynamic)
+    for(j=ibox_0;j<ibox_f;j++) {
+      int ii;
+      int ip1=indices[j];
+      int np1=boxes1[ip1].np;
+
+      int ix1=ip1%vol->n_side[0];
+      int iz1=ip1/(vol->n_side[0]*vol->n_side[1]);
+      int iy1=(ip1-ix1-iz1*vol->n_side[0]*vol->n_side[1])/vol->n_side[0];
+
+      int ixmin=MAX(ix1-irange[0],0);
+      int ixmax=MIN(ix1+irange[0],vol->n_side[0]-1);
+      int iymin=MAX(iy1-irange[1],0);
+      int iymax=MIN(iy1+irange[1],vol->n_side[1]-1);
+      int izmin=MAX(iz1-irange[2],0);
+      int izmax=MIN(iz1+irange[2],vol->n_side[2]-1);
+
+      for(ii=0;ii<np1;ii++) {
+	int iz;
+	double *pos1=&(boxes1[ip1].pos[4*ii]);
+        for(iz=izmin;iz<=izmax;iz++) {
+          int iy;
+          int iz_n=iz*vol->n_side[0]*vol->n_side[1];
+          for(iy=iymin;iy<=iymax;iy++) {
+            int ix;
+            int iy_n=iy*vol->n_side[0];
+            for(ix=ixmin;ix<=ixmax;ix++) {
+              int ip2=ix+iy_n+iz_n;
+	      if(boxes2[ip2].np>0) {
+		int jj;
+		int np2=boxes2[ip2].np;
+		for(jj=0;jj<np2;jj++) {
+		  double r2;
+		  double *pos2=&(boxes2[ip2].pos[4*jj]);
+		  double xr[3],xcm[3];
+		  xr[0]=pos1[0]-pos2[0];
+		  xr[1]=pos1[1]-pos2[1];
+		  xr[2]=pos1[2]-pos2[2];
+		  xcm[0]=0.5*(pos1[0]+pos2[0]);
+		  xcm[1]=0.5*(pos1[1]+pos2[1]);
+		  xcm[2]=0.5*(pos1[2]+pos2[2]);
+		  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
+		  if(r2<r2_max) {
+		    int ir=r2bin(bin,r2);
+		    if((ir<bin->nbins)&&(ir>=0)) {
+		      int icth;
+		      if(r2==0) icth=0;
+		      else {
+			double cth=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+			  sqrt((xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2])*r2);
+			icth=(int)(cth*bin->nbins2);
+		      }
+		      if((icth<bin->nbins2)&&(icth>=0)) {
+			hthread[icth+bin->nbins2*ir]+=pos1[3]*pos2[3];
+			if(get_counts)
+			  cthread[icth+bin->nbins2*ir]++;
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    } // end omp for
+
+#pragma omp critical
+    {
+      for(j=0;j<bin->nbins*bin->nbins2;j++)
+	hh[j]+=hthread[j];
+      if(get_counts) {
+	for(j=0;j<bin->nbins*bin->nbins2;j++)
+	  counts[j]+=cthread[j];
+      }
+    }
+
+    free(hthread);
+    free(cthread);
+  } //end omp parallel
+}
+
+static void auto_xi_r_mu_bf(CuteBin *bin, CuteVolDecomp *vol,
+			    int nbox_full,int *indices,CuteBox3D *boxes,
+			    double *hh, unsigned long long *counts,
+			    int get_counts)
+{
+  //////
+  // Angular auto-correlator
+  int i,ibox_0,ibox_f;
+  // No MPI for now
+  //share_iters(nbox_full,&ibox_0,&ibox_f);
+  // Comment these out when we bring back MPI
+  ibox_0=0;
+  ibox_f=nbox_full;
+
+  for(i=0;i<bin->nbins*bin->nbins2;i++) {
+    hh[i]=0;
+    if(get_counts)
+      counts[i]=0;
+  }
+    
+
+#pragma omp parallel default(none)		\
+  shared(nbox_full,indices,boxes,hh,counts)	\
+  shared(bin,vol,ibox_0,ibox_f,get_counts)
+  {
+    int j;
+    int irange[3];
+    unsigned long long *cthread=NULL;
+    double *hthread=(double *)my_calloc(bin->nbins*bin->nbins2,
+					sizeof(double));
+    double r_max=cute_get_rmax(bin);
+    double r2_max=r_max*r_max;
+    if(get_counts) {
+      cthread=(unsigned long long *)my_calloc(bin->nbins*bin->nbins2,
+					      sizeof(unsigned long long));
+    }
+
+    for(j=0;j<3;j++) {
+      double dx=vol->l_box[j]/vol->n_side[j];
+      irange[j]=(int)(r_max/dx)+1;
+    }
+    
+#pragma omp for nowait schedule(dynamic)
+    for(j=ibox_0;j<ibox_f;j++) {
+      int ii;
+      int ip1=indices[j];
+      int np1=boxes[ip1].np;
+
+      int ix1=ip1%vol->n_side[0];
+      int iz1=ip1/(vol->n_side[0]*vol->n_side[1]);
+      int iy1=(ip1-ix1-iz1*vol->n_side[0]*vol->n_side[1])/vol->n_side[0];
+
+      int ixmin=MAX(ix1-irange[0],0);
+      int ixmax=MIN(ix1+irange[0],vol->n_side[0]-1);
+      int iymin=MAX(iy1-irange[1],0);
+      int iymax=MIN(iy1+irange[1],vol->n_side[1]-1);
+      int izmin=MAX(iz1-irange[2],0);
+      int izmax=MIN(iz1+irange[2],vol->n_side[2]-1);
+
+      for(ii=0;ii<np1;ii++) {
+	double *pos1=&(boxes[ip1].pos[4*ii]);
+	
+	int jj;
+	for(jj=ii+1;jj<np1;jj++) {
+	  double r2;
+	  double *pos2=&(boxes[ip1].pos[4*jj]);
+	  double xr[3],xcm[3];
+	  xr[0]=pos1[0]-pos2[0];
+	  xr[1]=pos1[1]-pos2[1];
+	  xr[2]=pos1[2]-pos2[2];
+	  xcm[0]=0.5*(pos1[0]+pos2[0]);
+	  xcm[1]=0.5*(pos1[1]+pos2[1]);
+	  xcm[2]=0.5*(pos1[2]+pos2[2]);
+	  r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
+	  if(r2<r2_max) {
+	    int ir=r2bin(bin,r2);
+	    if((ir<bin->nbins)&&(ir>=0)) {
+	      int icth;
+	      if(r2==0) icth=0;
+	      else {
+		double cth=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+		  sqrt((xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2])*r2);
+		icth=(int)(cth*bin->nbins2);
+	      }
+	      if((icth<bin->nbins2)&&(icth>=0)) {
+		hthread[icth+bin->nbins2*ir]+=pos1[3]*pos2[3];
+		if(get_counts)
+		  cthread[icth+bin->nbins2*ir]++;
+	      }
+	    }
+	  }
+	}
+
+        int iz;
+        for(iz=izmin;iz<=izmax;iz++) {
+          int iy;
+          int iz_n=iz*vol->n_side[0]*vol->n_side[1];
+          for(iy=iymin;iy<=iymax;iy++) {
+            int ix;
+            int iy_n=iy*vol->n_side[0];
+            for(ix=ixmin;ix<=ixmax;ix++) {
+              int ip2=ix+iy_n+iz_n;
+	      if(boxes[ip2].np>0) {
+		if(ip2>ip1) {
+		  int np2=boxes[ip2].np;
+		  for(jj=0;jj<np2;jj++) {
+		    double r2;
+		    double *pos2=&(boxes[ip2].pos[4*jj]);
+		    double xr[3],xcm[3];
+		    xr[0]=pos1[0]-pos2[0];
+		    xr[1]=pos1[1]-pos2[1];
+		    xr[2]=pos1[2]-pos2[2];
+		    xcm[0]=0.5*(pos1[0]+pos2[0]);
+		    xcm[1]=0.5*(pos1[1]+pos2[1]);
+		    xcm[2]=0.5*(pos1[2]+pos2[2]);
+		    r2=xr[0]*xr[0]+xr[1]*xr[1]+xr[2]*xr[2];
+		    if(r2<r2_max) {
+		      int ir=r2bin(bin,r2);
+		      if((ir<bin->nbins)&&(ir>=0)) {
+			int icth;
+			if(r2==0) icth=0;
+			else {
+			  double cth=fabs(xr[0]*xcm[0]+xr[1]*xcm[1]+xr[2]*xcm[2])/
+			    sqrt((xcm[0]*xcm[0]+xcm[1]*xcm[1]+xcm[2]*xcm[2])*r2);
+			  icth=(int)(cth*bin->nbins2);
+			}
+			if((icth<bin->nbins2)&&(icth>=0)) {
+			  hthread[icth+bin->nbins2*ir]+=pos1[3]*pos2[3];
+			  if(get_counts)
+			    cthread[icth+bin->nbins2*ir]++;
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    } // end omp for
+
+#pragma omp critical
+    {
+      for(j=0;j<bin->nbins*bin->nbins2;j++)
+	hh[j]+=hthread[j];
+      if(get_counts) {
+	for(j=0;j<bin->nbins*bin->nbins2;j++)
+	  counts[j]+=cthread[j];
+      }
+    }
+
+    free(hthread);
+    free(cthread);
+  } //end omp parallel
+}
+
 void cute_xi_r_corr_bf(CuteBin *bin, int get_counts,
 		       double *DD, unsigned long long *counts,
 		       int n1, double *x1, double *y1, double *z1, double *w1,
@@ -447,7 +1011,16 @@ void cute_xi_r_corr_bf(CuteBin *bin, int get_counts,
   int *ind;
   CuteVolDecomp *vol;
   CuteBox3D *box1, *box2=NULL;
-  int nf, twocat=1;
+  int nf, ctype, twocat=1;
+
+  if(bin->is_2D) {
+    if(bin->is_mu2)
+      ctype=2; // xi(r,mu)
+    else
+      ctype=1; // xi(r_perp, r_par)
+  }
+  else
+    ctype=0; // xi(r)
 
   if(n2 <= 0) {
     x2=x1;
@@ -473,10 +1046,22 @@ void cute_xi_r_corr_bf(CuteBin *bin, int get_counts,
     box2=box1;
 
   // Correlation
-  if(twocat)
-    cross_xi_r_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts);
-  else
-    auto_xi_r_bf(bin,vol,nf,ind,box1,DD,counts,get_counts);
+  if(twocat) {
+    if(ctype==0)
+      cross_xi_r_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts);
+    else if(ctype==1)
+      cross_xi_r_2D_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts);
+    else if(ctype==2)
+      cross_xi_r_mu_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts);
+  }
+  else {
+    if(ctype==0)
+      auto_xi_r_bf(bin,vol,nf,ind,box1,DD,counts,get_counts);
+    else if(ctype==1)
+      auto_xi_r_2D_bf(bin,vol,nf,ind,box1,DD,counts,get_counts);
+    else if(ctype==2)
+      auto_xi_r_mu_bf(bin,vol,nf,ind,box1,DD,counts,get_counts);
+  }
 
   // Cleanup
   cute_boxes3D_free(vol->n_boxes3D,box1);

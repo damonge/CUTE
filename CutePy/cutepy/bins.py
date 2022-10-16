@@ -4,7 +4,7 @@ from cutepy import cutelib as lib
 
 class CuteBin2D(object):
     def __init__(self, nbins1, rmax1, nbins2, rmax2=None, is_log1=False,
-                 rmin_log1=None, is_mu2=False, mu2_from_zero=False):
+                 rmin_log1=None, is_mu2=False):
         self._bin = None
 
         if is_log1:
@@ -21,14 +21,13 @@ class CuteBin2D(object):
                 raise ValueError("I need `rmax2` if not binning in mu.")
 
         self._bin = lib.get_bins_2d_C(nbins1, int(is_log1), rmax1,  rmin_log1,
-                                      nbins2, rmax2, int(is_mu2),
-                                      int(mu2_from_zero))
+                                      nbins2, rmax2, int(is_mu2))
 
         self.nbins1 = nbins1
         self.nbins2 = nbins2
+        self.nbins_total = nbins1*nbins2
         self.is_log1 = is_log1
         self.is_mu2 = is_mu2
-        self.mu2_from_zero = mu2_from_zero
         self.r_max1 = self._bin.r_max
         self.log_r_max1 = self._bin.log_r_max
         self.n_logint1 = self._bin.n_logint
@@ -44,10 +43,7 @@ class CuteBin2D(object):
         else:
             r1 = i1_s*self.r_max1/self.nbins1
         if self.is_mu2:
-            if self.mu2_from_zero:
-                x2 = i2_s/self.nbins2
-            else:
-                x2 = -1+2*i2_s/self.nbins2
+            x2 = i2_s/self.nbins2
         else:
             x2 = i2_s*self.r_max2/self.nbins2
         return r1, x2
@@ -66,8 +62,7 @@ class CuteBin2D(object):
                     (self.n_logint1 == other.n_logint1) and
                     (self.nbins2 == other.nbins2) and
                     (self.r_max2 == other.r_max2) and
-                    (self.is_mu2 == other.is_mu2) and
-                    (self.mu2_from_zero == other.mu2_from_zero))
+                    (self.is_mu2 == other.is_mu2))
         return False
 
 

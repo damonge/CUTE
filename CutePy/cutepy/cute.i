@@ -37,10 +37,10 @@ CuteBin *get_bins_C(int nbins,int islog,double rmax,double rmin_log,int isdeg)
 }
 
 CuteBin *get_bins_2d_C(int nbins1,int islog1,double rmax1,double rmin_log1,
-		       int nbins2,double rmax2,int ismu2,int mu2zero)
+		       int nbins2,double rmax2,int ismu2)
 {
   return cute_bin_2d_new(nbins1, islog1, rmax1, rmin_log1,
-			 nbins2, ismu2, mu2zero, rmax2);
+			 nbins2, ismu2, rmax2);
 }
 
 void xi_th_Xcorr_bf_C(CuteBin *bin, int get_counts,
@@ -103,7 +103,7 @@ void xi_r_Xcorr_bf_C(CuteBin *bin, int get_counts,
 		     int n2w, double *w2,
 		     double *dout, int ndout)
 {
-  assert(ndout==2*bin->nbins);
+  assert(ndout==2*bin->nbins_total);
   assert(n1y==n1x);
   assert(n1z==n1x);
   assert(n1w==n1x);
@@ -111,15 +111,15 @@ void xi_r_Xcorr_bf_C(CuteBin *bin, int get_counts,
   assert(n2z==n2x);
   assert(n2w==n2x);
 
-  unsigned long long *counts=(unsigned long long *)calloc(bin->nbins,
+  unsigned long long *counts=(unsigned long long *)calloc(bin->nbins_total,
 							  sizeof(unsigned long long));
   int ii;
   cute_xi_r_corr_bf(bin, get_counts,
 		    dout, counts,
 		    n1x, x1, y1, z1, w1,
 		    n2x, x2, y2, z2, w2);
-  for(ii=0;ii<bin->nbins;ii++)
-    dout[bin->nbins+ii]=counts[ii];
+  for(ii=0;ii<bin->nbins_total;ii++)
+    dout[bin->nbins_total+ii]=counts[ii];
   free(counts);
 }
 
@@ -130,20 +130,20 @@ void xi_r_Acorr_bf_C(CuteBin *bin, int get_counts,
 		      int n1w, double *w1,
 		      double *dout, int ndout)
 {
-  assert(ndout==2*bin->nbins);
+  assert(ndout==2*bin->nbins_total);
   assert(n1y==n1x);
   assert(n1z==n1x);
   assert(n1w==n1x);
 
-  unsigned long long *counts=(unsigned long long *)calloc(bin->nbins,
+  unsigned long long *counts=(unsigned long long *)calloc(bin->nbins_total,
 							  sizeof(unsigned long long));
   int ii;
   cute_xi_r_corr_bf(bin, get_counts,
 		    dout, counts,
 		    n1x, x1, y1, z1, w1,
 		    -1, NULL, NULL, NULL, NULL);
-  for(ii=0;ii<bin->nbins;ii++)
-    dout[bin->nbins+ii]=counts[ii];
+  for(ii=0;ii<bin->nbins_total;ii++)
+    dout[bin->nbins_total+ii]=counts[ii];
   free(counts);
 }
 %}

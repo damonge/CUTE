@@ -71,10 +71,12 @@ class CuteBin(object):
     r_max = property(_cutelib.CuteBin_r_max_get, _cutelib.CuteBin_r_max_set)
     i_r_max = property(_cutelib.CuteBin_i_r_max_get, _cutelib.CuteBin_i_r_max_set)
     log_r_max = property(_cutelib.CuteBin_log_r_max_get, _cutelib.CuteBin_log_r_max_set)
+    is_2D = property(_cutelib.CuteBin_is_2D_get, _cutelib.CuteBin_is_2D_set)
     nbins2 = property(_cutelib.CuteBin_nbins2_get, _cutelib.CuteBin_nbins2_set)
     is_mu2 = property(_cutelib.CuteBin_is_mu2_get, _cutelib.CuteBin_is_mu2_set)
-    mu2_from_zero = property(_cutelib.CuteBin_mu2_from_zero_get, _cutelib.CuteBin_mu2_from_zero_set)
     r_max2 = property(_cutelib.CuteBin_r_max2_get, _cutelib.CuteBin_r_max2_set)
+    i_r_max2 = property(_cutelib.CuteBin_i_r_max2_get, _cutelib.CuteBin_i_r_max2_set)
+    nbins_total = property(_cutelib.CuteBin_nbins_total_get, _cutelib.CuteBin_nbins_total_set)
 
     def __init__(self):
         _cutelib.CuteBin_swiginit(self, _cutelib.new_CuteBin())
@@ -87,11 +89,14 @@ _cutelib.CuteBin_swigregister(CuteBin)
 def cute_bin_new(nr, is_log, rmax, rmin_log, unit):
     return _cutelib.cute_bin_new(nr, is_log, rmax, rmin_log, unit)
 
-def cute_bin_2d_new(nr, is_log, rmax, rmin_log, nr2, is_mu2, mu2_from_zero, rmax2):
-    return _cutelib.cute_bin_2d_new(nr, is_log, rmax, rmin_log, nr2, is_mu2, mu2_from_zero, rmax2)
+def cute_bin_2d_new(nr, is_log, rmax, rmin_log, nr2, is_mu2, rmax2):
+    return _cutelib.cute_bin_2d_new(nr, is_log, rmax, rmin_log, nr2, is_mu2, rmax2)
 
 def cute_bin_free(bin):
     return _cutelib.cute_bin_free(bin)
+
+def cute_get_rmax(bin):
+    return _cutelib.cute_get_rmax(bin)
 
 def cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2):
     return _cutelib.cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2)
@@ -102,8 +107,8 @@ def cute_xi_r_corr_bf(bin, get_counts, DD, counts, n1, x1, y1, z1, w1, n2, x2, y
 def get_bins_C(nbins, islog, rmax, rmin_log, isdeg):
     return _cutelib.get_bins_C(nbins, islog, rmax, rmin_log, isdeg)
 
-def get_bins_2d_C(nbins1, islog1, rmax1, rmin_log1, nbins2, rmax2, ismu2, mu2zero):
-    return _cutelib.get_bins_2d_C(nbins1, islog1, rmax1, rmin_log1, nbins2, rmax2, ismu2, mu2zero)
+def get_bins_2d_C(nbins1, islog1, rmax1, rmin_log1, nbins2, rmax2, ismu2):
+    return _cutelib.get_bins_2d_C(nbins1, islog1, rmax1, rmin_log1, nbins2, rmax2, ismu2)
 
 def xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, dout):
     return _cutelib.xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, dout)
