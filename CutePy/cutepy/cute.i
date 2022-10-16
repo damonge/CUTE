@@ -28,12 +28,19 @@
 
 %inline %{
 
-CuteBin *get_bins_C(int nbins,int islog, double rmax, double rmin_log, int isdeg)
+CuteBin *get_bins_C(int nbins,int islog,double rmax,double rmin_log,int isdeg)
 {
   double unit=1;
   if(isdeg)
     unit=DTORAD;
   return cute_bin_new(nbins, islog, rmax, rmin_log, unit);
+}
+
+CuteBin *get_bins_2d_C(int nbins1,int islog1,double rmax1,double rmin_log1,
+		       int nbins2,double rmax2,int ismu2,int mu2zero)
+{
+  return cute_bin_2d_new(nbins1, islog1, rmax1, rmin_log1,
+			 nbins2, ismu2, mu2zero, rmax2);
 }
 
 void xi_th_Xcorr_bf_C(CuteBin *bin, int get_counts,

@@ -2843,12 +2843,19 @@ SWIGINTERNINLINE PyObject*
 
 
 
-CuteBin *get_bins_C(int nbins,int islog, double rmax, double rmin_log, int isdeg)
+CuteBin *get_bins_C(int nbins,int islog,double rmax,double rmin_log,int isdeg)
 {
   double unit=1;
   if(isdeg)
     unit=DTORAD;
   return cute_bin_new(nbins, islog, rmax, rmin_log, unit);
+}
+
+CuteBin *get_bins_2d_C(int nbins1,int islog1,double rmax1,double rmin_log1,
+		       int nbins2,double rmax2,int ismu2,int mu2zero)
+{
+  return cute_bin_2d_new(nbins1, islog1, rmax1, rmin_log1,
+			 nbins2, ismu2, mu2zero, rmax2);
 }
 
 void xi_th_Xcorr_bf_C(CuteBin *bin, int get_counts,
@@ -3740,6 +3747,214 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_CuteBin_nbins2_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "CuteBin_nbins2_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_nbins2_set" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "CuteBin_nbins2_set" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  if (arg1) (arg1)->nbins2 = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CuteBin_nbins2_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  int result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_nbins2_get" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  result = (int) ((arg1)->nbins2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CuteBin_is_mu2_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "CuteBin_is_mu2_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_is_mu2_set" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "CuteBin_is_mu2_set" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  if (arg1) (arg1)->is_mu2 = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CuteBin_is_mu2_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  int result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_is_mu2_get" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  result = (int) ((arg1)->is_mu2);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CuteBin_mu2_from_zero_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "CuteBin_mu2_from_zero_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_mu2_from_zero_set" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "CuteBin_mu2_from_zero_set" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  if (arg1) (arg1)->mu2_from_zero = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CuteBin_mu2_from_zero_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  int result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_mu2_from_zero_get" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  result = (int) ((arg1)->mu2_from_zero);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CuteBin_r_max2_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "CuteBin_r_max2_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_r_max2_set" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  ecode2 = SWIG_AsVal_double(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "CuteBin_r_max2_set" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = (double)(val2);
+  if (arg1) (arg1)->r_max2 = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_CuteBin_r_max2_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CuteBin *arg1 = (CuteBin *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  double result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_CuteBin, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CuteBin_r_max2_get" "', argument " "1"" of type '" "CuteBin *""'"); 
+  }
+  arg1 = (CuteBin *)(argp1);
+  result = (double) ((arg1)->r_max2);
+  resultobj = SWIG_From_double((double)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_new_CuteBin(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   CuteBin *result = 0 ;
@@ -3833,6 +4048,84 @@ SWIGINTERN PyObject *_wrap_cute_bin_new(PyObject *SWIGUNUSEDPARM(self), PyObject
   } 
   arg5 = (double)(val5);
   result = (CuteBin *)cute_bin_new(arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_CuteBin, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cute_bin_2d_new(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  int arg2 ;
+  double arg3 ;
+  double arg4 ;
+  int arg5 ;
+  int arg6 ;
+  int arg7 ;
+  double arg8 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  double val8 ;
+  int ecode8 = 0 ;
+  PyObject *swig_obj[8] ;
+  CuteBin *result = 0 ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "cute_bin_2d_new", 8, 8, swig_obj)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "cute_bin_2d_new" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = (int)(val1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "cute_bin_2d_new" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  ecode3 = SWIG_AsVal_double(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "cute_bin_2d_new" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = (double)(val3);
+  ecode4 = SWIG_AsVal_double(swig_obj[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "cute_bin_2d_new" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = (double)(val4);
+  ecode5 = SWIG_AsVal_int(swig_obj[4], &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "cute_bin_2d_new" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = (int)(val5);
+  ecode6 = SWIG_AsVal_int(swig_obj[5], &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "cute_bin_2d_new" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = (int)(val6);
+  ecode7 = SWIG_AsVal_int(swig_obj[6], &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "cute_bin_2d_new" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = (int)(val7);
+  ecode8 = SWIG_AsVal_double(swig_obj[7], &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "cute_bin_2d_new" "', argument " "8"" of type '" "double""'");
+  } 
+  arg8 = (double)(val8);
+  result = (CuteBin *)cute_bin_2d_new(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_CuteBin, 0 |  0 );
   return resultobj;
 fail:
@@ -4143,6 +4436,84 @@ SWIGINTERN PyObject *_wrap_get_bins_C(PyObject *SWIGUNUSEDPARM(self), PyObject *
   } 
   arg5 = (int)(val5);
   result = (CuteBin *)get_bins_C(arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_CuteBin, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_get_bins_2d_C(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  int arg2 ;
+  double arg3 ;
+  double arg4 ;
+  int arg5 ;
+  double arg6 ;
+  int arg7 ;
+  int arg8 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  double val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  int val8 ;
+  int ecode8 = 0 ;
+  PyObject *swig_obj[8] ;
+  CuteBin *result = 0 ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "get_bins_2d_C", 8, 8, swig_obj)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "get_bins_2d_C" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = (int)(val1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "get_bins_2d_C" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  ecode3 = SWIG_AsVal_double(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "get_bins_2d_C" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = (double)(val3);
+  ecode4 = SWIG_AsVal_double(swig_obj[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "get_bins_2d_C" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = (double)(val4);
+  ecode5 = SWIG_AsVal_int(swig_obj[4], &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "get_bins_2d_C" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = (int)(val5);
+  ecode6 = SWIG_AsVal_double(swig_obj[5], &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "get_bins_2d_C" "', argument " "6"" of type '" "double""'");
+  } 
+  arg6 = (double)(val6);
+  ecode7 = SWIG_AsVal_int(swig_obj[6], &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "get_bins_2d_C" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = (int)(val7);
+  ecode8 = SWIG_AsVal_int(swig_obj[7], &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "get_bins_2d_C" "', argument " "8"" of type '" "int""'");
+  } 
+  arg8 = (int)(val8);
+  result = (CuteBin *)get_bins_2d_C(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_CuteBin, 0 |  0 );
   return resultobj;
 fail:
@@ -4956,15 +5327,25 @@ static PyMethodDef SwigMethods[] = {
 	 { "CuteBin_i_r_max_get", _wrap_CuteBin_i_r_max_get, METH_O, NULL},
 	 { "CuteBin_log_r_max_set", _wrap_CuteBin_log_r_max_set, METH_VARARGS, NULL},
 	 { "CuteBin_log_r_max_get", _wrap_CuteBin_log_r_max_get, METH_O, NULL},
+	 { "CuteBin_nbins2_set", _wrap_CuteBin_nbins2_set, METH_VARARGS, NULL},
+	 { "CuteBin_nbins2_get", _wrap_CuteBin_nbins2_get, METH_O, NULL},
+	 { "CuteBin_is_mu2_set", _wrap_CuteBin_is_mu2_set, METH_VARARGS, NULL},
+	 { "CuteBin_is_mu2_get", _wrap_CuteBin_is_mu2_get, METH_O, NULL},
+	 { "CuteBin_mu2_from_zero_set", _wrap_CuteBin_mu2_from_zero_set, METH_VARARGS, NULL},
+	 { "CuteBin_mu2_from_zero_get", _wrap_CuteBin_mu2_from_zero_get, METH_O, NULL},
+	 { "CuteBin_r_max2_set", _wrap_CuteBin_r_max2_set, METH_VARARGS, NULL},
+	 { "CuteBin_r_max2_get", _wrap_CuteBin_r_max2_get, METH_O, NULL},
 	 { "new_CuteBin", _wrap_new_CuteBin, METH_NOARGS, NULL},
 	 { "delete_CuteBin", _wrap_delete_CuteBin, METH_O, NULL},
 	 { "CuteBin_swigregister", CuteBin_swigregister, METH_O, NULL},
 	 { "CuteBin_swiginit", CuteBin_swiginit, METH_VARARGS, NULL},
 	 { "cute_bin_new", _wrap_cute_bin_new, METH_VARARGS, NULL},
+	 { "cute_bin_2d_new", _wrap_cute_bin_2d_new, METH_VARARGS, NULL},
 	 { "cute_bin_free", _wrap_cute_bin_free, METH_O, NULL},
 	 { "cute_angular_corr_bf", _wrap_cute_angular_corr_bf, METH_VARARGS, NULL},
 	 { "cute_xi_r_corr_bf", _wrap_cute_xi_r_corr_bf, METH_VARARGS, NULL},
 	 { "get_bins_C", _wrap_get_bins_C, METH_VARARGS, NULL},
+	 { "get_bins_2d_C", _wrap_get_bins_2d_C, METH_VARARGS, NULL},
 	 { "xi_th_Xcorr_bf_C", _wrap_xi_th_Xcorr_bf_C, METH_VARARGS, NULL},
 	 { "xi_th_Acorr_bf_C", _wrap_xi_th_Acorr_bf_C, METH_VARARGS, NULL},
 	 { "xi_r_Xcorr_bf_C", _wrap_xi_r_Xcorr_bf_C, METH_VARARGS, NULL},

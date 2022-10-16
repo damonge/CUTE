@@ -1,6 +1,5 @@
 import numpy as np
 import cutepy as cute
-import healpy as hp
 from scipy.integrate import quad
 from scipy.special import spherical_jn
 
@@ -25,8 +24,8 @@ class GauSim3D(object):
                     np.log(self.kmax))[0]
 
         kv = self.ng*self.dk*np.fft.fftfreq(self.ng)
-        k3d = np.sqrt(kv[:, None, None]**2+
-                      kv[None, :, None]**2+
+        k3d = np.sqrt(kv[:, None, None]**2 +
+                      kv[None, :, None]**2 +
                       kv[None, None, :self.ng//2+1]**2)
         self.sigk = np.sqrt(0.5*self.pk(k3d)*self.vol)*self.ng**3/self.vol
 
@@ -50,68 +49,11 @@ class GauSim3D(object):
                 np.floor(z/self.dx).astype(int)]
 
 
-'''
-def test_mono_tracer():
-    ng = 64
-    lbox = 1.
-    gs = GauSim3D(lbox=lbox, ng=ng)
-    
-    npix = hp.nside2npix(nside)
-    ls = np.arange(3*nside).astype(int)
-    # 1-degree smoothing
-    sig_beam = np.radians(1.)
-    sig_pix = np.radians(17.71/nside)
-    cl = 0.001*np.exp(-ls*(ls+1)*sig_beam**2)/(ls+10.)
-    cl_pixwin = cl*np.exp(-ls*(ls+1)*sig_pix**2)
-    ra, dec = hp.pix2ang(nside, np.arange(npix), lonlat=True)
-
-    b = cute.CuteBin(20, 10., is_deg=True)
-
-    # Random catalog
-    ra_r = ra
-    dec_r = dec
-    rr = cute.CuteAngularCorrelator(b, [ra_r, dec_r])
-    rr.run()
-
-    xis = []
-    for i in range(10):
-        # Data catalog
-        mp = hp.synfast(cl, nside)
-        nmap = np.random.poisson(1+mp)
-        coords = [np.repeat(ra, nmap), np.repeat(dec, nmap)]
-        # DD
-        dd = cute.CuteAngularCorrelator(b, coords)
-        dd.run()
-        # DR
-        dr = cute.CuteAngularCorrelator(b, coords, coords2=[ra_r, dec_r])
-        dr.run()
-        # L&S
-        xi = dd.get_xi(dr=dr, rr=rr, kind='tracer')[1]
-        xis.append(xi)
-    xis = np.array(xis)
-    xi_mean = np.mean(xis, axis=0)
-    xi_std = np.std(xis, axis=0)
-
-    th = b.get_r_values()
-    cth = np.cos(np.radians(th))
-    xi_th = np.array([np.sum(cl_pixwin*(2*ls+1)*eval_legendre(ls, c))
-                     for c in cth])/(4*np.pi)
-
-    # Uncomment if you'd like to plot the results
-    # import matplotlib.pyplot as plt
-    # plt.figure()
-    # plt.errorbar(th[1:], xi_mean[1:], yerr=xi_std[1:], fmt='k.')
-    # plt.plot(th[1:], xi_th[1:], 'r-')
-    # for xi in xis:
-    #     plt.plot(th[1:], xi[1:], 'b-', alpha=0.1)
-    # plt.show()
-    assert np.all(np.fabs(xi_th-xi_mean)[1:] < 2*xi_std[1:])
-'''
-
 def test_mono_sample():
     ng = 64
     lbox = 1.
     gs = GauSim3D(lbox=lbox, ng=ng)
+
     def pk2xi(lk, r):
         k = np.exp(lk)
         x = k*r
