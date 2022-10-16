@@ -185,7 +185,7 @@ class CuteCorrelator2D(CuteCorrelator):
         else:
             raise ValueError(f"Unknown correlation type {kind}.")
         r, x = self.bins.get_r_values()
-        return r, x, xi.reshape([self.bins.nbins, self.bins.nbins2])
+        return r, x, xi.reshape([self.bins.nbins1, self.bins.nbins2])
 
 
 class CuteAngularCorrelator(CuteCorrelator):

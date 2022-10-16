@@ -108,3 +108,31 @@ def test_mono_sample():
     # plt.show()
     assert np.all(np.fabs(xi_th-xiA_mean) < 2*xiA_std)
     assert np.all(np.fabs(xi_th-xiX_mean) < 2*xiX_std)
+
+
+def test_2D_rmu_sample():
+    ng = 64
+    lbox = 1.
+    gs = GauSim3D(lbox=lbox, ng=ng)
+
+    mp = gs.gen_sim().flatten()
+    x, y, z = gs.lbox*np.random.rand(3, ng**3//2)
+    ix, iy, iz = gs.xyz2ijk(x, y, z)
+    ibox = iz+ng*(iy+ng*ix)
+    mp = mp[ibox]
+
+    b_2D = cute.CuteBin2D(20, 0.2, 10, is_mu2=True)
+    corr_2D = cute.CuteCorrelator2D(b_2D, [x, y, z], weights=mp)
+    corr_2D.run()
+    r, _, xi_2D = corr_2D.get_xi()
+
+    b_mono = cute.CuteBin(20, 0.2)
+    corr_mono = cute.CuteCorrelator(b_mono, [x, y, z], weights=mp)
+    corr_mono.run()
+    xi_mono = corr_mono.get_xi()[1]
+
+    # Check that we recover monopole by averaging over mu
+    wwsum = np.sum(corr_2D.ww.reshape([b_2D.nbins1, b_2D.nbins2]), axis=1)
+    ctsum = np.sum(corr_2D.ct.reshape([b_2D.nbins1, b_2D.nbins2]), axis=1)
+    xi_mono_B = wwsum/ctsum
+    assert np.all(np.fabs(xi_mono_B/xi_mono-1) < 1E-5)
