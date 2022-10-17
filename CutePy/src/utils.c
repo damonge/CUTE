@@ -26,6 +26,9 @@ void *my_calloc(size_t nmemb,size_t size)
 
 void print_info(char *fmt,...)
 {
+#ifdef _SILENT
+  return;
+#else //_SILENT
   va_list args;
   char msg[256];
     
@@ -34,4 +37,5 @@ void print_info(char *fmt,...)
   va_end(args);
     
   printf("%s",msg);
+#endif //_SILENT
 }

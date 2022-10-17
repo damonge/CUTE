@@ -131,8 +131,47 @@ def test_2D_rmu_sample():
     corr_mono.run()
     xi_mono = corr_mono.get_xi()[1]
 
-    # Check that we recover monopole by averaging over mu
+    # Check that mean over mu is similar to monopole
+    xi_mean = np.mean(xi_2D, axis=1)
+    xi_std = np.std(xi_2D, axis=1)
+    assert np.all(np.fabs(xi_mono-xi_mean) < 3*xi_std)
+
+    # Check that we recover monopole by summing weights and counts over mu
     wwsum = np.sum(corr_2D.ww.reshape([b_2D.nbins1, b_2D.nbins2]), axis=1)
     ctsum = np.sum(corr_2D.ct.reshape([b_2D.nbins1, b_2D.nbins2]), axis=1)
     xi_mono_B = wwsum/ctsum
     assert np.all(np.fabs(xi_mono_B/xi_mono-1) < 1E-5)
+
+
+def test_2D_ps_sample():
+    ng = 64
+    lbox = 1.
+    gs = GauSim3D(lbox=lbox, ng=ng)
+
+    mp = gs.gen_sim().flatten()
+    x, y, z = gs.lbox*np.random.rand(3, ng**3//2)
+    ix, iy, iz = gs.xyz2ijk(x, y, z)
+    ibox = iz+ng*(iy+ng*ix)
+    mp = mp[ibox]
+
+    b_2D = cute.CuteBin2D(20, 0.2, 20, rmax2=0.2)
+    corr_2D = cute.CuteCorrelator2D(b_2D, [x, y, z], weights=mp)
+    corr_2D.run()
+    rt, rp, xi_2D = corr_2D.get_xi()
+
+    b_mono = cute.CuteBin(10, 0.2)
+    corr_mono = cute.CuteCorrelator(b_mono, [x, y, z], weights=mp)
+    corr_mono.run()
+    r, xi_mono = corr_mono.get_xi()
+
+    r2d = np.sqrt(rt[:, None]**2+rp[None, :]**2)
+    sumxi = np.histogram(r2d.flatten(), bins=10, range=[0, 0.2],
+                         weights=xi_2D.flatten())[0]
+    sumxi2 = np.histogram(r2d.flatten(), bins=10, range=[0, 0.2],
+                          weights=xi_2D.flatten()**2)[0]
+    sumct = np.histogram(r2d.flatten(), bins=10, range=[0, 0.2])[0]
+    xi_mean = sumxi/sumct
+    xi_std = np.sqrt(sumxi2/sumct-xi_mean**2)
+
+    # Check that averaging over the same r is similar to monopole
+    assert np.all(np.fabs(xi_mean-xi_mono) < 2*xi_std)

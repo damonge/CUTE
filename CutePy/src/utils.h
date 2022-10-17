@@ -2,6 +2,7 @@
 #define _CUTE_UTILS_
 
 #include "cute.h"
+#define _SILENT
 
 void *my_malloc(size_t size);
 
