@@ -2,6 +2,31 @@ import numpy as np
 import cutepy as cute
 import healpy as hp
 from scipy.special import eval_legendre
+from .utils import get_comm_world
+
+
+def test_angcorr_mpi():
+    comm = get_comm_world()
+
+    nside = 128
+    npix = hp.nside2npix(nside)
+    ls = np.arange(3*nside).astype(int)
+    # 1-degree smoothing
+    sig_beam = np.radians(1.)
+    cl = np.exp(-ls*(ls+1)*sig_beam**2)/(ls+10.)
+    ra, dec = hp.pix2ang(nside, np.arange(npix), lonlat=True)
+
+    b = cute.CuteBin(20, 10., is_deg=True)
+    mp = hp.synfast(cl, nside)
+    # Auto-correlation (no MPI)
+    corr1 = cute.CuteAngularCorrelator(b, [ra, dec], weights=mp)
+    corr1.run()
+    # Auto-correlation (with MPI)
+    corr2 = cute.CuteAngularCorrelator(b, [ra, dec], weights=mp)
+    corr2.run(comm=comm)
+
+    assert np.allclose(corr1.ww, corr2.ww, atol=1E-8, rtol=1E-5)
+    assert np.allclose(corr1.ct, corr2.ct, atol=1E-8, rtol=1E-5)
 
 
 def test_angcorr_tracer():

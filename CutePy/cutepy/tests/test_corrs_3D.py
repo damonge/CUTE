@@ -2,6 +2,7 @@ import numpy as np
 import cutepy as cute
 from scipy.integrate import quad
 from scipy.special import spherical_jn
+from .utils import get_comm_world
 
 
 class GauSim3D(object):
@@ -47,6 +48,60 @@ class GauSim3D(object):
         return [np.floor(x/self.dx).astype(int),
                 np.floor(y/self.dx).astype(int),
                 np.floor(z/self.dx).astype(int)]
+
+
+def test_3D_mpi():
+    comm = get_comm_world()
+
+    ng = 64
+    lbox = 1.
+    gs = GauSim3D(lbox=lbox, ng=ng)
+
+    # Get simulation
+    mp = gs.gen_sim().flatten()
+    x, y, z = gs.lbox*np.random.rand(3, ng**3//2)
+    ix, iy, iz = gs.xyz2ijk(x, y, z)
+    ibox = iz+ng*(iy+ng*ix)
+    mp = mp[ibox]
+
+    # Get 1D binning
+    b = cute.CuteBin(20, 0.2)
+
+    # Monopole (no MPI)
+    corr1 = cute.CuteCorrelator(b, [x, y, z], weights=mp)
+    corr1.run()
+    # Monopole (with MPI)
+    corr2 = cute.CuteCorrelator(b, [x, y, z], weights=mp)
+    corr2.run(comm=comm)
+
+    assert np.allclose(corr1.ww, corr2.ww, atol=1E-8, rtol=1E-5)
+    assert np.allclose(corr1.ct, corr2.ct, atol=1E-8, rtol=1E-5)
+
+    # Get 2D r-mu binning
+    b_2D = cute.CuteBin2D(20, 0.2, 10, is_mu2=True)
+
+    # r-mu (no MPI)
+    corr1 = cute.CuteCorrelator2D(b_2D, [x, y, z], weights=mp)
+    corr1.run()
+    # r-mu (with MPI)
+    corr2 = cute.CuteCorrelator2D(b_2D, [x, y, z], weights=mp)
+    corr2.run(comm=comm)
+
+    assert np.allclose(corr1.ww, corr2.ww, atol=1E-8, rtol=1E-5)
+    assert np.allclose(corr1.ct, corr2.ct, atol=1E-8, rtol=1E-5)
+
+    # Get 2D pi-sigma binning
+    b_2D = cute.CuteBin2D(20, 0.2, 20, rmax2=0.2)
+
+    # pi-sigma (no MPI)
+    corr1 = cute.CuteCorrelator2D(b_2D, [x, y, z], weights=mp)
+    corr1.run()
+    # pi-sigma (with MPI)
+    corr2 = cute.CuteCorrelator2D(b_2D, [x, y, z], weights=mp)
+    corr2.run(comm=comm)
+
+    assert np.allclose(corr1.ww, corr2.ww, atol=1E-8, rtol=1E-5)
+    assert np.allclose(corr1.ct, corr2.ct, atol=1E-8, rtol=1E-5)
 
 
 def test_mono_sample():
