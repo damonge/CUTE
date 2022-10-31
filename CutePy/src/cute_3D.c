@@ -202,17 +202,13 @@ static void cross_xi_r_bf(CuteBin *bin, CuteVolDecomp *vol,
 			  int nbox_full,int *indices,
 			  CuteBox3D *boxes1,CuteBox3D *boxes2,
 			  double *hh,unsigned long long *counts,
-			  int get_counts)
+			  int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ibox_0,ibox_f;
   // No MPI for now
-  //share_iters(nbox_full,&ibox_0,&ibox_f);
-  // Comment these out when we bring back MPI
-  ibox_0=0;
-  ibox_f=nbox_full;
-  
+  share_iters(nbox_full,&ibox_0,&ibox_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins;i++) {
     hh[i]=0;
@@ -310,18 +306,15 @@ static void cross_xi_r_bf(CuteBin *bin, CuteVolDecomp *vol,
 }
 
 static void auto_xi_r_bf(CuteBin *bin, CuteVolDecomp *vol,
-			int nbox_full,int *indices,CuteBox3D *boxes,
-			double *hh, unsigned long long *counts,
-			int get_counts)
+			 int nbox_full,int *indices,CuteBox3D *boxes,
+			 double *hh, unsigned long long *counts,
+			 int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ibox_0,ibox_f;
   // No MPI for now
-  //share_iters(nbox_full,&ibox_0,&ibox_f);
-  // Comment these out when we bring back MPI
-  ibox_0=0;
-  ibox_f=nbox_full;
+  share_iters(nbox_full,&ibox_0,&ibox_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins;i++) {
     hh[i]=0;
@@ -444,17 +437,13 @@ static void cross_xi_r_2D_bf(CuteBin *bin, CuteVolDecomp *vol,
 			     int nbox_full,int *indices,
 			     CuteBox3D *boxes1,CuteBox3D *boxes2,
 			     double *hh,unsigned long long *counts,
-			     int get_counts)
+			     int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ibox_0,ibox_f;
   // No MPI for now
-  //share_iters(nbox_full,&ibox_0,&ibox_f);
-  // Comment these out when we bring back MPI
-  ibox_0=0;
-  ibox_f=nbox_full;
-  
+  share_iters(nbox_full,&ibox_0,&ibox_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins*bin->nbins2;i++) {
     hh[i]=0;
@@ -568,16 +557,13 @@ static void cross_xi_r_2D_bf(CuteBin *bin, CuteVolDecomp *vol,
 static void auto_xi_r_2D_bf(CuteBin *bin, CuteVolDecomp *vol,
 			    int nbox_full,int *indices,CuteBox3D *boxes,
 			    double *hh, unsigned long long *counts,
-			    int get_counts)
+			    int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ibox_0,ibox_f;
   // No MPI for now
-  //share_iters(nbox_full,&ibox_0,&ibox_f);
-  // Comment these out when we bring back MPI
-  ibox_0=0;
-  ibox_f=nbox_full;
+  share_iters(nbox_full,&ibox_0,&ibox_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins*bin->nbins2;i++) {
     hh[i]=0;
@@ -725,17 +711,13 @@ static void cross_xi_r_mu_bf(CuteBin *bin, CuteVolDecomp *vol,
 			     int nbox_full,int *indices,
 			     CuteBox3D *boxes1,CuteBox3D *boxes2,
 			     double *hh,unsigned long long *counts,
-			     int get_counts)
+			     int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ibox_0,ibox_f;
   // No MPI for now
-  //share_iters(nbox_full,&ibox_0,&ibox_f);
-  // Comment these out when we bring back MPI
-  ibox_0=0;
-  ibox_f=nbox_full;
-  
+  share_iters(nbox_full,&ibox_0,&ibox_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins*bin->nbins2;i++) {
     hh[i]=0;
@@ -849,16 +831,13 @@ static void cross_xi_r_mu_bf(CuteBin *bin, CuteVolDecomp *vol,
 static void auto_xi_r_mu_bf(CuteBin *bin, CuteVolDecomp *vol,
 			    int nbox_full,int *indices,CuteBox3D *boxes,
 			    double *hh, unsigned long long *counts,
-			    int get_counts)
+			    int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ibox_0,ibox_f;
   // No MPI for now
-  //share_iters(nbox_full,&ibox_0,&ibox_f);
-  // Comment these out when we bring back MPI
-  ibox_0=0;
-  ibox_f=nbox_full;
+  share_iters(nbox_full,&ibox_0,&ibox_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins*bin->nbins2;i++) {
     hh[i]=0;
@@ -1006,7 +985,8 @@ static void auto_xi_r_mu_bf(CuteBin *bin, CuteVolDecomp *vol,
 void cute_xi_r_corr_bf(CuteBin *bin, int get_counts,
 		       double *DD, unsigned long long *counts,
 		       int n1, double *x1, double *y1, double *z1, double *w1,
-		       int n2, double *x2, double *y2, double *z2, double *w2)
+		       int n2, double *x2, double *y2, double *z2, double *w2,
+		       int NodeThis, int NNodes)
 {
   int *ind;
   CuteVolDecomp *vol;
@@ -1048,19 +1028,19 @@ void cute_xi_r_corr_bf(CuteBin *bin, int get_counts,
   // Correlation
   if(twocat) {
     if(ctype==0)
-      cross_xi_r_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts);
+      cross_xi_r_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts,NodeThis,NNodes);
     else if(ctype==1)
-      cross_xi_r_2D_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts);
+      cross_xi_r_2D_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts,NodeThis,NNodes);
     else if(ctype==2)
-      cross_xi_r_mu_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts);
+      cross_xi_r_mu_bf(bin,vol,nf,ind,box1,box2,DD,counts,get_counts,NodeThis,NNodes);
   }
   else {
     if(ctype==0)
-      auto_xi_r_bf(bin,vol,nf,ind,box1,DD,counts,get_counts);
+      auto_xi_r_bf(bin,vol,nf,ind,box1,DD,counts,get_counts,NodeThis,NNodes);
     else if(ctype==1)
-      auto_xi_r_2D_bf(bin,vol,nf,ind,box1,DD,counts,get_counts);
+      auto_xi_r_2D_bf(bin,vol,nf,ind,box1,DD,counts,get_counts,NodeThis,NNodes);
     else if(ctype==2)
-      auto_xi_r_mu_bf(bin,vol,nf,ind,box1,DD,counts,get_counts);
+      auto_xi_r_mu_bf(bin,vol,nf,ind,box1,DD,counts,get_counts,NodeThis,NNodes);
   }
 
   // Cleanup

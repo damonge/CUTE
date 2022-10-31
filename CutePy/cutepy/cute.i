@@ -50,6 +50,7 @@ void xi_th_Xcorr_bf_C(CuteBin *bin, int get_counts,
 		      int n2c, double *cth2,
 		      int n2p, double *phi2,
 		      int n2w, double *w2,
+		      int NodeThis, int NNodes,
 		      double *dout, int ndout)
 {
   assert(ndout==2*bin->nbins);
@@ -64,7 +65,8 @@ void xi_th_Xcorr_bf_C(CuteBin *bin, int get_counts,
   cute_angular_corr_bf(bin, get_counts,
 		       dout, counts,
 		       n1c, cth1, phi1, w1,
-		       n2c, cth2, phi2, w2);
+		       n2c, cth2, phi2, w2,
+		       NodeThis, NNodes);
   for(ii=0;ii<bin->nbins;ii++)
     dout[bin->nbins+ii]=counts[ii];
   free(counts);
@@ -74,6 +76,7 @@ void xi_th_Acorr_bf_C(CuteBin *bin, int get_counts,
 		      int n1c, double *cth1,
 		      int n1p, double *phi1,
 		      int n1w, double *w1,
+		      int NodeThis, int NNodes,
 		      double *dout, int ndout)
 {
   assert(ndout==2*bin->nbins);
@@ -86,7 +89,8 @@ void xi_th_Acorr_bf_C(CuteBin *bin, int get_counts,
   cute_angular_corr_bf(bin, get_counts,
 		       dout, counts,
 		       n1c, cth1, phi1, w1,
-		       -1, NULL, NULL, NULL);
+		       -1, NULL, NULL, NULL,
+		       NodeThis,NNodes);
   for(ii=0;ii<bin->nbins;ii++)
     dout[bin->nbins+ii]=counts[ii];
   free(counts);
@@ -101,6 +105,7 @@ void xi_r_Xcorr_bf_C(CuteBin *bin, int get_counts,
 		     int n2y, double *y2,
 		     int n2z, double *z2,
 		     int n2w, double *w2,
+		     int NodeThis, int NNodes,
 		     double *dout, int ndout)
 {
   assert(ndout==2*bin->nbins_total);
@@ -117,18 +122,20 @@ void xi_r_Xcorr_bf_C(CuteBin *bin, int get_counts,
   cute_xi_r_corr_bf(bin, get_counts,
 		    dout, counts,
 		    n1x, x1, y1, z1, w1,
-		    n2x, x2, y2, z2, w2);
+		    n2x, x2, y2, z2, w2,
+		    NodeThis, NNodes);
   for(ii=0;ii<bin->nbins_total;ii++)
     dout[bin->nbins_total+ii]=counts[ii];
   free(counts);
 }
 
 void xi_r_Acorr_bf_C(CuteBin *bin, int get_counts,
-		      int n1x, double *x1,
-		      int n1y, double *y1,
-		      int n1z, double *z1,
-		      int n1w, double *w1,
-		      double *dout, int ndout)
+		     int n1x, double *x1,
+		     int n1y, double *y1,
+		     int n1z, double *z1,
+		     int n1w, double *w1,
+		     int NodeThis, int NNodes,
+		     double *dout, int ndout)
 {
   assert(ndout==2*bin->nbins_total);
   assert(n1y==n1x);
@@ -141,7 +148,8 @@ void xi_r_Acorr_bf_C(CuteBin *bin, int get_counts,
   cute_xi_r_corr_bf(bin, get_counts,
 		    dout, counts,
 		    n1x, x1, y1, z1, w1,
-		    -1, NULL, NULL, NULL, NULL);
+		    -1, NULL, NULL, NULL, NULL,
+		    NodeThis,NNodes);
   for(ii=0;ii<bin->nbins_total;ii++)
     dout[bin->nbins_total+ii]=counts[ii];
   free(counts);

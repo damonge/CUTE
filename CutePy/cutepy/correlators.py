@@ -58,7 +58,7 @@ class CuteCorrelator(object):
         if self.coords2 is None:  # Auto-correlation
             d = self._cA(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2],
-                         w, 2*self.bins.nbins)
+                         w, 0, 1, 2*self.bins.nbins)
         else:  # Cross-correlation
             if self.weights2 is None:
                 w2 = np.ones(len(self.coords2[0]))
@@ -67,7 +67,7 @@ class CuteCorrelator(object):
             d = self._cX(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2], w,
                          self.coords2[0], self.coords2[1], self.coords2[2], w2,
-                         2*self.bins.nbins)
+                         0, 1, 2*self.bins.nbins)
         self.ww = d[:self.bins.nbins]
         self.ct = d[self.bins.nbins:]
 
@@ -140,7 +140,7 @@ class CuteCorrelator2D(CuteCorrelator):
         if self.coords2 is None:  # Auto-correlation
             d = self._cA(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2],
-                         w, 2*self.bins.nbins_total)
+                         w, 0, 1, 2*self.bins.nbins_total)
         else:  # Cross-correlation
             if self.weights2 is None:
                 w2 = np.ones(len(self.coords2[0]))
@@ -149,7 +149,7 @@ class CuteCorrelator2D(CuteCorrelator):
             d = self._cX(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2], w,
                          self.coords2[0], self.coords2[1], self.coords2[2], w2,
-                         2*self.bins.nbins_total)
+                         0, 1, 2*self.bins.nbins_total)
         self.ww = d[:self.bins.nbins_total]
         self.ct = d[self.bins.nbins_total:]
 
@@ -201,7 +201,7 @@ class CuteAngularCorrelator(CuteCorrelator):
             d = self._cA(self.bins._bin, True,
                          np.cos(np.radians(90-self.coords[1])),
                          np.radians(self.coords[0]),
-                         w, 2*self.bins.nbins)
+                         w, 0, 1, 2*self.bins.nbins)
         else:  # Cross-correlation
             if self.weights2 is None:
                 w2 = np.ones(len(self.coords2[0]))
@@ -212,7 +212,7 @@ class CuteAngularCorrelator(CuteCorrelator):
                          np.radians(self.coords[0]), w,
                          np.cos(np.radians(90-self.coords2[1])),
                          np.radians(self.coords2[0]), w2,
-                         2*self.bins.nbins)
+                         0, 1, 2*self.bins.nbins)
         self.ww = d[:self.bins.nbins]
         self.ct = d[self.bins.nbins:]
 

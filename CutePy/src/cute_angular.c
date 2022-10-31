@@ -305,17 +305,13 @@ static void cross_ang_bf(CuteBin *bin, CuteSkyDecomp *sky,
 			 int npix_full,int *indices,
 			 CuteBox2D *boxes1,CuteBox2D *boxes2,
 			 double *hh,unsigned long long *counts,
-			 int get_counts)
+			 int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ipix_0,ipix_f;
   // No MPI for now
-  //share_iters(npix_full,&ipix_0,&ipix_f);
-  // Comment these out when we bring back MPI
-  ipix_0=0;
-  ipix_f=npix_full;
-  
+  share_iters(npix_full,&ipix_0,&ipix_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins;i++) {
     hh[i]=0;
@@ -393,16 +389,13 @@ static void cross_ang_bf(CuteBin *bin, CuteSkyDecomp *sky,
 static void auto_ang_bf(CuteBin *bin, CuteSkyDecomp *sky,
 			int npix_full,int *indices,CuteBox2D *boxes,
 			double *hh, unsigned long long *counts,
-			int get_counts)
+			int get_counts,int NodeThis,int NNodes)
 {
   //////
   // Angular auto-correlator
   int i,ipix_0,ipix_f;
   // No MPI for now
-  //share_iters(npix_full,&ipix_0,&ipix_f);
-  // Comment these out when we bring back MPI
-  ipix_0=0;
-  ipix_f=npix_full;
+  share_iters(npix_full,&ipix_0,&ipix_f,NodeThis,NNodes);
 
   for(i=0;i<bin->nbins;i++) {
     hh[i]=0;
@@ -498,7 +491,8 @@ static void auto_ang_bf(CuteBin *bin, CuteSkyDecomp *sky,
 void cute_angular_corr_bf(CuteBin *bin, int get_counts,
 			  double *DD, unsigned long long *counts,
 			  int n1, double *cth1, double *phi1, double *w1,
-			  int n2, double *cth2, double *phi2, double *w2)
+			  int n2, double *cth2, double *phi2, double *w2,
+			  int NodeThis, int NNodes)
 {
   int *ind;
   CuteSkyDecomp *sky;
@@ -529,9 +523,9 @@ void cute_angular_corr_bf(CuteBin *bin, int get_counts,
 
   // Correlation
   if(twocat)
-    cross_ang_bf(bin,sky,nf,ind,box1,box2,DD,counts,get_counts);
+    cross_ang_bf(bin,sky,nf,ind,box1,box2,DD,counts,get_counts,NodeThis,NNodes);
   else
-    auto_ang_bf(bin,sky,nf,ind,box1,DD,counts,get_counts);
+    auto_ang_bf(bin,sky,nf,ind,box1,DD,counts,get_counts,NodeThis,NNodes);
 
   // Cleanup
   cute_boxes2D_free(sky->n_boxes2D,box1);

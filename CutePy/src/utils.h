@@ -10,4 +10,7 @@ void *my_calloc(size_t nmemb,size_t size);
 
 void print_info(char *fmt,...);
 
+void share_iters(int n_iters, int *iter0, int *iterf,
+		 int NodeThis, int NNodes);
+
 #endif //_CUTE_UTILS_

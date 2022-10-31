@@ -98,11 +98,11 @@ def cute_bin_free(bin):
 def cute_get_rmax(bin):
     return _cutelib.cute_get_rmax(bin)
 
-def cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2):
-    return _cutelib.cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2)
+def cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2, NodeThis, NNodes):
+    return _cutelib.cute_angular_corr_bf(bin, get_counts, DD, counts, n1, cth1, phi1, w1, n2, cth2, phi2, w2, NodeThis, NNodes)
 
-def cute_xi_r_corr_bf(bin, get_counts, DD, counts, n1, x1, y1, z1, w1, n2, x2, y2, z2, w2):
-    return _cutelib.cute_xi_r_corr_bf(bin, get_counts, DD, counts, n1, x1, y1, z1, w1, n2, x2, y2, z2, w2)
+def cute_xi_r_corr_bf(bin, get_counts, DD, counts, n1, x1, y1, z1, w1, n2, x2, y2, z2, w2, NodeThis, NNodes):
+    return _cutelib.cute_xi_r_corr_bf(bin, get_counts, DD, counts, n1, x1, y1, z1, w1, n2, x2, y2, z2, w2, NodeThis, NNodes)
 
 def get_bins_C(nbins, islog, rmax, rmin_log, isdeg):
     return _cutelib.get_bins_C(nbins, islog, rmax, rmin_log, isdeg)
@@ -110,16 +110,16 @@ def get_bins_C(nbins, islog, rmax, rmin_log, isdeg):
 def get_bins_2d_C(nbins1, islog1, rmax1, rmin_log1, nbins2, rmax2, ismu2):
     return _cutelib.get_bins_2d_C(nbins1, islog1, rmax1, rmin_log1, nbins2, rmax2, ismu2)
 
-def xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, dout):
-    return _cutelib.xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, dout)
+def xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, NodeThis, NNodes, dout):
+    return _cutelib.xi_th_Xcorr_bf_C(bin, get_counts, n1c, n1p, n1w, n2c, n2p, n2w, NodeThis, NNodes, dout)
 
-def xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, dout):
-    return _cutelib.xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, dout)
+def xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, NodeThis, NNodes, dout):
+    return _cutelib.xi_th_Acorr_bf_C(bin, get_counts, n1c, n1p, n1w, NodeThis, NNodes, dout)
 
-def xi_r_Xcorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, n2x, n2y, n2z, n2w, dout):
-    return _cutelib.xi_r_Xcorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, n2x, n2y, n2z, n2w, dout)
+def xi_r_Xcorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, n2x, n2y, n2z, n2w, NodeThis, NNodes, dout):
+    return _cutelib.xi_r_Xcorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, n2x, n2y, n2z, n2w, NodeThis, NNodes, dout)
 
-def xi_r_Acorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, dout):
-    return _cutelib.xi_r_Acorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, dout)
+def xi_r_Acorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, NodeThis, NNodes, dout):
+    return _cutelib.xi_r_Acorr_bf_C(bin, get_counts, n1x, n1y, n1z, n1w, NodeThis, NNodes, dout)
 
 

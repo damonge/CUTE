@@ -39,11 +39,13 @@ double cute_get_rmax(CuteBin *bin);
 void cute_angular_corr_bf(CuteBin *bin, int get_counts,
 			  double *DD, unsigned long long *counts,
 			  int n1, double *cth1, double *phi1, double *w1,
-			  int n2, double *cth2, double *phi2, double *w2);
+			  int n2, double *cth2, double *phi2, double *w2,
+			  int NodeThis,int NNodes);
 
 void cute_xi_r_corr_bf(CuteBin *bin, int get_counts,
 		       double *DD, unsigned long long *counts,
 		       int n1, double *x1, double *y1, double *z1, double *w1,
-		       int n2, double *x2, double *y2, double *z2, double *w2);
+		       int n2, double *x2, double *y2, double *z2, double *w2,
+		       int NodeThis,int NNodes);
 
 #endif //_CUTE_
