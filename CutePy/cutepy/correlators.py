@@ -49,16 +49,23 @@ class CuteCorrelator(object):
     def _check_bins(self, bins):
         pass
 
-    def _cute_driver(self):
+    def _cute_driver(self, comm=None):
         if self.weights is None:
             w = np.ones(len(self.coords[0]))
         else:
             w = self.weights
 
+        if comm is None:
+            NodeThis = 0
+            NNodes = 1
+        else:
+            NodeThis = comm.Get_rank()
+            NNodes = comm.Get_size()
+
         if self.coords2 is None:  # Auto-correlation
             d = self._cA(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2],
-                         w, 0, 1, 2*self.bins.nbins)
+                         w, NodeThis, NNodes, 2*self.bins.nbins)
         else:  # Cross-correlation
             if self.weights2 is None:
                 w2 = np.ones(len(self.coords2[0]))
@@ -67,14 +74,24 @@ class CuteCorrelator(object):
             d = self._cX(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2], w,
                          self.coords2[0], self.coords2[1], self.coords2[2], w2,
-                         0, 1, 2*self.bins.nbins)
+                         NodeThis, NNodes, 2*self.bins.nbins)
+
+        # Add results from different tasks
+        if comm is not None:
+            if NodeThis > 0:
+                comm.send(d, dest=0)
+            else:
+                for p in range(1, NNodes):
+                    dtemp = comm.recv(source=p)
+                    d += dtemp
+
         self.ww = d[:self.bins.nbins]
         self.ct = d[self.bins.nbins:]
 
-    def run(self):
+    def run(self, comm=None):
         if self.ww is not None:
             return
-        self._cute_driver()
+        self._cute_driver(comm)
 
     def get_xi(self, kind='sample', dr=None, rr=None, rd=None):
         # Check other correlators use same bins
@@ -131,16 +148,23 @@ class CuteCorrelator2D(CuteCorrelator):
         if not isinstance(bins, CuteBin2D):
             raise ValueError("`bins` must be of type `CuteBin2D`")
 
-    def _cute_driver(self):
+    def _cute_driver(self, comm=None):
         if self.weights is None:
             w = np.ones(len(self.coords[0]))
         else:
             w = self.weights
 
+        if comm is None:
+            NodeThis = 0
+            NNodes = 1
+        else:
+            NodeThis = comm.Get_rank()
+            NNodes = comm.Get_size()
+
         if self.coords2 is None:  # Auto-correlation
             d = self._cA(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2],
-                         w, 0, 1, 2*self.bins.nbins_total)
+                         w, NodeThis, NNodes, 2*self.bins.nbins_total)
         else:  # Cross-correlation
             if self.weights2 is None:
                 w2 = np.ones(len(self.coords2[0]))
@@ -149,7 +173,17 @@ class CuteCorrelator2D(CuteCorrelator):
             d = self._cX(self.bins._bin, True,
                          self.coords[0], self.coords[1], self.coords[2], w,
                          self.coords2[0], self.coords2[1], self.coords2[2], w2,
-                         0, 1, 2*self.bins.nbins_total)
+                         NodeThis, NNodes, 2*self.bins.nbins_total)
+
+        # Add results from different tasks
+        if comm is not None:
+            if NodeThis > 0:
+                comm.send(d, dest=0)
+            else:
+                for p in range(1, NNodes):
+                    dtemp = comm.recv(source=p)
+                    d += dtemp
+
         self.ww = d[:self.bins.nbins_total]
         self.ct = d[self.bins.nbins_total:]
 
@@ -191,17 +225,24 @@ class CuteCorrelator2D(CuteCorrelator):
 class CuteAngularCorrelator(CuteCorrelator):
     kind = 'xi_theta'
 
-    def _cute_driver(self):
+    def _cute_driver(self, comm=None):
         if self.weights is None:
             w = np.ones(len(self.coords[0]))
         else:
             w = self.weights
 
+        if comm is None:
+            NodeThis = 0
+            NNodes = 1
+        else:
+            NodeThis = comm.Get_rank()
+            NNodes = comm.Get_size()
+
         if self.coords2 is None:  # Auto-correlation
             d = self._cA(self.bins._bin, True,
                          np.cos(np.radians(90-self.coords[1])),
                          np.radians(self.coords[0]),
-                         w, 0, 1, 2*self.bins.nbins)
+                         w, NodeThis, NNodes, 2*self.bins.nbins)
         else:  # Cross-correlation
             if self.weights2 is None:
                 w2 = np.ones(len(self.coords2[0]))
@@ -212,7 +253,17 @@ class CuteAngularCorrelator(CuteCorrelator):
                          np.radians(self.coords[0]), w,
                          np.cos(np.radians(90-self.coords2[1])),
                          np.radians(self.coords2[0]), w2,
-                         0, 1, 2*self.bins.nbins)
+                         NodeThis, NNodes, 2*self.bins.nbins)
+
+        # Add results from different tasks
+        if comm is not None:
+            if NodeThis > 0:
+                comm.send(d, dest=0)
+            else:
+                for p in range(1, NNodes):
+                    dtemp = comm.recv(source=p)
+                    d += dtemp
+
         self.ww = d[:self.bins.nbins]
         self.ct = d[self.bins.nbins:]
 
